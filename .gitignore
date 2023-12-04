@@ -1,5 +1,5 @@
 # folders
-3rdparty
+3rdparty/fftw
 build
 install
 dist

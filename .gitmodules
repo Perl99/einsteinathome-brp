@@ -1,0 +1,15 @@
+[submodule "3rdparty/zlib"]
+	path = 3rdparty/zlib
+	url = https://github.com/madler/zlib.git
+[submodule "3rdparty/libxml2"]
+	path = 3rdparty/libxml2
+	url = https://github.com/GNOME/libxml2.git
+[submodule "3rdparty/gsl"]
+	path = 3rdparty/gsl
+	url = https://git.savannah.gnu.org/git/gsl.git
+[submodule "3rdparty/binutils-gdb"]
+	path = 3rdparty/binutils
+	url = git://sourceware.org/git/binutils-gdb.git
+[submodule "3rdparty/boinc"]
+	path = 3rdparty/boinc
+	url = https://gitlab.aei.uni-hannover.de/einsteinathome/boinc.git

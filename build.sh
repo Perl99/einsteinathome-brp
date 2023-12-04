@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###########################################################################
-#   Copyright (C) 2008-2012 by Oliver Bock                                #
+#   Copyright (C) 2008-2012 by Oliver Bock, 2023 by Paweł Perłakowski     #
 #   oliver.bock[AT]aei.mpg.de                                             #
 #                                                                         #
 #   This file is part of Einstein@Home.                                   #
@@ -24,24 +24,16 @@
 ### globals ###############################################################
 
 ROOT=`pwd`
-PATH_ORG="$PATH"
-PATH_MINGW="$PATH"
 LOGFILE=$ROOT/build.log
 ARCH=`uname -m`
 
-# use SSE to avoid cross-platform precision issues
-#export CFLAGS="-mfpmath=sse -msse $CFLAGS"
-#export CXXFLAGS="-mfpmath=sse -msse $CXXFLAGS"
+export MAKEFLAGS="-j$(nproc)"
 
 # NVIDIA CUDA compiler wrapper options
 export NVCCFLAGS="-Xptxas -v -arch=compute_10 -code=compute_10 -g --verbose"
 
 # component versions
-BINUTILS_VERSION=2.22
-GSL_VERSION=1.12
 FFTW_VERSION=3.3.2
-LIBXML_VERSION=2.6.32
-ZLIB_VERSION=1.2.8
 OPENSSL_VERSION=1.0.1l
 
 # git tags
@@ -57,9 +49,6 @@ TARGET_LINUX_OCL=3
 TARGET_MAC=4
 TARGET_MAC_CUDA=5
 TARGET_MAC_OCL=6
-TARGET_WIN32=7
-TARGET_WIN32_CUDA=8
-TARGET_WIN32_OCL=9
 TARGET_DOC=10
 TARGET_DAEMONS=11
 TARGET_WIN64=12
@@ -95,8 +84,6 @@ BS_BUILD_FFTW=6
 BS_BUILD_CLFFT=7
 BS_BUILD_LIBXML=8
 BS_BUILD_BOINC=9
-BS_PREPARE_MINGW=10
-BS_BUILD_MINGW=11
 BS_BUILD_BINUTILS_MINGW=12
 BS_BUILD_GSL_MINGW=13
 BS_BUILD_FFTW_MINGW=14
@@ -142,7 +129,7 @@ distclean()
 
     echo "Purging build system..." | tee -a $LOGFILE
 
-    rm -rf 3rdparty || failure
+    rm -rf 3rdparty/fftw || failure
     rm -rf build || failure
     rm -rf install || failure
     rm -rf doc/html || failure
@@ -164,7 +151,6 @@ check_last_build()
         echo "Build target changed! Purging build and install trees..." | tee -a $LOGFILE
         rm -rf build >> $LOGFILE || failure
         rm -rf install >> $LOGFILE || failure
-        rm -rf 3rdparty/boinc >> $LOGFILE || failure
         prepare_tree || failure
     fi
 
@@ -209,7 +195,7 @@ check_prerequisites()
     echo "Checking prerequisites..." | tee -a $LOGFILE
 
     # required toolchain
-    TOOLS="automake autoconf m4 curl git tar patch gcc g++ ld libtool ar pkg-config"
+    TOOLS="automake autoconf m4 curl git tar patch gcc g++ ld libtool ar pkg-config x86_64-w64-mingw32"
 
     for tool in $TOOLS; do
         if ! ( type $tool >/dev/null 2>&1 ); then
@@ -231,7 +217,13 @@ prepare_tree()
     fi
 
     echo "Preparing tree..." | tee -a $LOGFILE
-    mkdir -p 3rdparty >> $LOGFILE || failure
+    mkdir -p 3rdparty/fftw >> $LOGFILE || failure
+    mkdir -p build >> $LOGFILE || failure
+    mkdir -p build/gsl >> $LOGFILE || failure
+    mkdir -p build/fftw >> $LOGFILE || failure
+    mkdir -p build/libxml2 >> $LOGFILE || failure
+    mkdir -p build/boinc >> $LOGFILE || failure
+    mkdir -p build/binutils >> $LOGFILE || failure
     mkdir -p install/bin >> $LOGFILE || failure
     mkdir -p install/include >> $LOGFILE || failure
     mkdir -p install/include/coff >> $LOGFILE || failure
@@ -285,8 +277,6 @@ prepare_ndk()
 
     curl http://dl.google.com/android/ndk/android-ndk-r8e-linux-x86_64.tar.bz2 -o android-ndk-r8e-linux-x86_64.tar.bz2  >> $LOGFILE 2>&1 || failure
 
-# http://dl.google.com/android/ndk/android-ndk-r8c-linux-x86.tar.bz2 -o android-ndk-r8c-linux-x86.tar.bz2  >> $LOGFILE 2>&1 || failure
-
     bunzip2 android-ndk-r8e-linux-x86_64.tar.bz2  >> $LOGFILE 2>&1 || failure
     tar -xvf android-ndk-r8e-linux-x86_64.tar     >> $LOGFILE 2>&1 || failure
 
@@ -296,11 +286,7 @@ prepare_ndk()
 
     mkdir -p $ANDROIDTC  >> $LOGFILE || failure
 
-
-
 # set up toolchain(s)
-
-
 #TODO check platform. possibly we need several here: for BOINC and the science app version(s)
 
     $NDKROOT/build/tools/make-standalone-toolchain.sh --platform=android-9 --install-dir=$ANDROIDTC --system=linux-x86_64 >> $LOGFILE 2>&1 || failure
@@ -354,113 +340,19 @@ export CFLAGS="--sysroot=$TCSYSROOT -DANDROID -DDECLARE_TIMEZONE -Wall -I$TCINCL
 export CXXFLAGS="--sysroot=$TCSYSROOT -DANDROID -Wall  -I$TCINCLUDES/include -funroll-loops -fexceptions -O3 -fomit-frame-pointer $CXXFLAGS"
 export LDFLAGS="-L$TCSYSROOT/usr/lib -L$TCINCLUDES/lib -llog $LDFLAGS"
 export GDB_CFLAGS="--sysroot=$TCSYSROOT -Wall -g -I$TCINCLUDES/include"
-
-#export PKG_CONFIG_SYSROOT_DIR=$TCSYSROOT
-#export PKG_CONFIG_PATH=$CURL_DIR/lib/pkgconfig:$OPENSSL_DIR/lib/pkgconfig
-
-
-}
-
-prepare_mingw()
-{
-    if [ $BUILDSTATE -ge $BS_PREPARE_MINGW ]; then
-        return 0
-    fi
-
-    cd $ROOT || failure
-
-    echo "Preparing MinGW source tree..." | tee -a $LOGFILE
-    mkdir -p 3rdparty/mingw/xscripts >> $LOGFILE || failure
-    cd 3rdparty/mingw/xscripts || failure
-
-    if [ -d CVS ]; then
-        echo "Updating MinGW build script..." | tee -a $LOGFILE
-        cvs update -C >> $LOGFILE 2>&1 || failure
-    else
-        cd .. || failure
-        echo "Retrieving MinGW build script (this may take a while)..." | tee -a $LOGFILE
-        cvs -z3 -d:pserver:anonymous@mingw.cvs.sourceforge.net:/cvsroot/mingw checkout -P xscripts >> $LOGFILE 2>&1 || failure
-    fi
-
-    echo "Preparing MinGW build script..." | tee -a $LOGFILE
-    cd $ROOT/3rdparty/mingw/xscripts || failure
-    # note: svn has no force/overwrite switch. the file might not be updated when patched
-    patch x86-mingw32-build.sh.conf < $ROOT/patches/x86-mingw32-build.sh.conf.patch >> $LOGFILE || failure
-    chmod +x x86-mingw32-build.sh >> $LOGFILE || failure
-
-    echo "Preparing MinGW packages..." | tee -a $LOGFILE
-    mkdir -p $ROOT/3rdparty/mingw/packages >> $LOGFILE || failure
-    cd $ROOT/3rdparty/mingw/packages || failure
-
-    rm -f gcc-core-4.6.2.tar.gz >> $LOGFILE 2>&1 || failure
-    curl http://ftp.gnu.org/gnu/gcc/gcc-4.6.2/gcc-core-4.6.2.tar.gz -o gcc-core-4.6.2.tar.gz >> $LOGFILE 2>&1 || failure
-    mv gcc-core-4.6.2.tar.gz gcc-core-4.6.2-1-src.tar.gz
-
-    rm -f binutils-2.22.tar.gz >> $LOGFILE 2>&1 || failure
-    curl http://ftp.gnu.org/gnu/binutils/binutils-2.22.tar.gz -o binutils-2.22.tar.gz >> $LOGFILE 2>&1 || failure
-    mv binutils-2.22.tar.gz binutils-2.22-src.tar.gz
-
-    # mingwrt-3.20-mingw32-src.tar.gz
-
-    store_build_state $BS_PREPARE_MINGW
-    return 0
-}
-
-
-prepare_binutils()
-{
-    echo "Preparing binutils..." | tee -a $LOGFILE
-    mkdir -p $ROOT/build/binutils >> $LOGFILE || failure
-
-    echo "Retrieving binutils $BINUTILS_VERSION (this may take a while)..." | tee -a $LOGFILE
-    cd $ROOT/3rdparty || failure
-
-    rm -f binutils-$BINUTILS_VERSION.tar.bz2 >> $LOGFILE 2>&1 || failure
-    curl http://ftp.gnu.org/gnu/binutils/binutils-$BINUTILS_VERSION.tar.bz2 -o binutils-$BINUTILS_VERSION.tar.bz2 >> $LOGFILE 2>&1 || failure
-    tar -xjf binutils-$BINUTILS_VERSION.tar.bz2 >> $LOGFILE 2>&1 || failure
-    rm binutils-$BINUTILS_VERSION.tar.bz2 >> $LOGFILE 2>&1 || failure
-    # substitute old source tree
-    rm -rf binutils >> $LOGFILE 2>&1 || failure
-    mv binutils-$BINUTILS_VERSION binutils >> $LOGFILE 2>&1 || failure
-
-    return 0
 }
 
 prepare_zlib()
 {
     echo "Preparing zlib..." | tee -a $LOGFILE
     cd $ROOT/3rdparty || failure
-    curl http://zlib.net/zlib-$ZLIB_VERSION.tar.gz -o zlib-$ZLIB_VERSION.tar.gz >> $LOGFILE 2>&1 || failure
-    tar -xzf zlib-$ZLIB_VERSION.tar.gz >> $LOGFILE 2>&1 || failure
-    mkdir -p $ROOT/build >> $LOGFILE 2>&1 || failure
-    cp -r zlib-$ZLIB_VERSION $ROOT/build >> $LOGFILE 2>&1 || failure
-    sed s%/usr/bin/libtool%libtool% zlib-$ZLIB_VERSION/configure > $ROOT/build/zlib-$ZLIB_VERSION/configure 2>>$LOGFILE || failure
-}
-
-prepare_gsl()
-{
-    echo "Preparing GSL..." | tee -a $LOGFILE
-    mkdir -p $ROOT/build/gsl >> $LOGFILE || failure
-
-    echo "Retrieving GSL $GSL_VERSION (this may take a while)..." | tee -a $LOGFILE
-    cd $ROOT/3rdparty || failure
-    rm -f gsl-$GSL_VERSION.tar.gz >> $LOGFILE 2>&1 || failure
-    curl ftp://ftp.gnu.org/gnu/gsl/gsl-$GSL_VERSION.tar.gz -o gsl-$GSL_VERSION.tar.gz >> $LOGFILE 2>&1 || failure
-    tar -xzf gsl-$GSL_VERSION.tar.gz >> $LOGFILE 2>&1 || failure
-    rm gsl-$GSL_VERSION.tar.gz >> $LOGFILE 2>&1 || failure
-    # substitute old source tree
-    rm -rf gsl >> $LOGFILE 2>&1 || failure
-    mv gsl-$GSL_VERSION gsl >> $LOGFILE 2>&1 || failure
-
-    return 0
+    cp -r zlib $ROOT/build >> $LOGFILE 2>&1 || failure
+    sed s%/usr/bin/libtool%libtool% zlib/configure > $ROOT/build/zlib/configure 2>>$LOGFILE || failure
 }
 
 
 prepare_fftw()
 {
-    echo "Preparing FFTW3..." | tee -a $LOGFILE
-    mkdir -p $ROOT/build/fftw >> $LOGFILE || failure
-
     echo "Retrieving FFTW3 $FFTW_VERSION (this may take a while)..." | tee -a $LOGFILE
     cd $ROOT/3rdparty || failure
     rm -f fftw-$FFTW_VERSION.tar.gz >> $LOGFILE 2>&1 || failure
@@ -504,71 +396,13 @@ prepare_clfft()
     return 0
 }
 
-
-prepare_libxml()
-{
-    echo "Preparing libxml2..." | tee -a $LOGFILE
-    mkdir -p $ROOT/build/libxml2 >> $LOGFILE || failure
-
-    echo "Retrieving libxml2 $LIBXML_VERSION (this may take a while)..." | tee -a $LOGFILE
-    cd $ROOT/3rdparty || failure
-    rm -f libxml2-sources-$LIBXML_VERSION.tar.gz >> $LOGFILE 2>&1 || failure
-    curl ftp://xmlsoft.org/libxml2/old/libxml2-sources-$LIBXML_VERSION.tar.gz -o libxml2-sources-$LIBXML_VERSION.tar.gz >> $LOGFILE 2>&1 || failure
-    tar -xzf libxml2-sources-$LIBXML_VERSION.tar.gz >> $LOGFILE 2>&1 || failure
-    rm libxml2-sources-$LIBXML_VERSION.tar.gz >> $LOGFILE 2>&1 || failure
-    # substitute old source tree
-    rm -rf libxml2 >> $LOGFILE 2>&1 || failure
-    mv libxml2-$LIBXML_VERSION libxml2 >> $LOGFILE 2>&1 || failure
-
-    return 0
-}
-
-
-
-prepare_boinc()
-{
-    echo "Preparing BOINC..." | tee -a $LOGFILE
-    mkdir -p $ROOT/3rdparty/boinc >> $LOGFILE || failure
-    mkdir -p $ROOT/build/boinc >> $LOGFILE || failure
-
-    cd $ROOT/3rdparty/boinc || failure
-    test -n "$NOUPDATE" && return 0
-    if [ -d .git ]; then
-        echo "Updating BOINC (tag: $1)..." | tee -a $LOGFILE
-        # make sure local changes (patches) are reverted to ensure fast-forward merge
-        git checkout -f $1 >> $LOGFILE  2>&1 || failure
-        # update tag info
-        git remote update >> $LOGFILE  2>&1 || failure
-        git fetch --tags >> $LOGFILE  2>&1 || failure
-        # checkout build revision
-        git checkout -f $1 >> $LOGFILE  2>&1 || failure
-    else
-        # workaround for old git versions
-        rm -rf $ROOT/3rdparty/boinc >> $LOGFILE || failure
-
-        echo "Retrieving BOINC (tag: $1) (this may take a while)..." | tee -a $LOGFILE
-        cd $ROOT/3rdparty || failure
-        if [ ".$1" == ".$TAG_DAEMONS" ]; then
-            git clone git@gitlab.aei.uni-hannover.de:einsteinathome/boinc-server.git boinc >> $LOGFILE 2>&1 || failure
-        else
-            git clone -n https://gitlab.aei.uni-hannover.de/einsteinathome/boinc.git boinc >> $LOGFILE 2>&1 || failure
-        fi
-        cd $ROOT/3rdparty/boinc || failure
-        git checkout -f $1 >> $LOGFILE  2>&1 || failure
-    fi
-
-    return 0
-}
-
 prepare_openssl_cross() 
 {
-
         echo "Retrieving openssl, required by BOINC" | tee -a $LOGFILE
         mkdir -p $ROOT/3rdparty/openssl >> $LOGFILE || failure
         mkdir -p $ROOT/build/openssl >> $LOGFILE || failure
 
         cd $ROOT/3rdparty/openssl || failure
-        # curl http://www.openssl.org/source/openssl-1.0.1c.tar.gz -o openssl-1.0.1c.tar.gz >> $LOGFILE 2>&1 || failure
         curl ftp://ftp.pca.dfn.de/pub/tools/net/openssl/source/openssl-$OPENSSL_VERSION.tar.gz -o openssl-$OPENSSL_VERSION.tar.gz >> $LOGFILE 2>&1 || failure
         tar -xvzf openssl-$OPENSSL_VERSION.tar.gz >> $LOGFILE 2>&1 || failure
 
@@ -587,7 +421,6 @@ build_openssl_cross()
 # TODO try out of tree build
     cd $OPENSSL
     make clean  >> $LOGFILE 2>&1 || failure
-
     
     ./Configure linux-generic32 no-shared no-dso -DL_ENDIAN --openssldir="$TCINCLUDES/ssl"    >> $LOGFILE 2>&1 || failure
 
@@ -599,9 +432,6 @@ mv Makefile.out Makefile
 make  >> $LOGFILE 2>&1 || failure
 
 make install_sw  >> $LOGFILE 2>&1 || failure
-
-
-
 }
 
 build_binutils()
@@ -624,7 +454,6 @@ build_binutils()
         cd $ROOT/build/binutils || failure
         CPPFLAGS="-I$ROOT/install/include $CPPFLAGS" LDFLAGS="-L$ROOT/install/lib $LDFLAGS" $ROOT/3rdparty/binutils/configure --prefix=$ROOT/install --enable-shared=no --enable-static=yes --disable-werror >> $LOGFILE 2>&1 || failure
         CPPFLAGS="-I$ROOT/install/include $CPPFLAGS" LDFLAGS="-L$ROOT/install/lib $LDFLAGS" make configure-bfd >> $LOGFILE 2>&1 || failure
-#        sed -i~ "s%-lz%$ROOT/install/lib/libz.a%" "$ROOT/build/binutils/bfd/Makefile" >> $LOGFILE 2>&1 || failure
         make >> $LOGFILE 2>&1 || failure
         make install >> $LOGFILE 2>&1 || failure
         # copy required headers and lib (missing install target)
@@ -653,9 +482,9 @@ build_zlib()
 
     prepare_zlib || failure
 
-    # note: the official zlib distribution doen't allow an out-of-tree build
+    # note: the official zlib distribution doesn't allow an out-of-tree build
     echo "Building zlib..." | tee -a $LOGFILE
-    cd $ROOT/build/zlib-$ZLIB_VERSION >> $LOGFILE 2>&1 || failure
+    cd $ROOT/build/zlib >> $LOGFILE 2>&1 || failure
     if echo "$TARGET_HOST" | grep mingw >/dev/null; then
         I="$ROOT/install"
         make -f win32/Makefile.gcc PREFIX="$TARGET_HOST-" BINARY_PATH="$I/bin" INCLUDE_PATH="$I/include" LIBRARY_PATH="$I/lib" install >> $LOGFILE 2>&1 || failure
@@ -680,9 +509,9 @@ build_zlib_ndk()
 
     prepare_zlib || failure
 
-    # note: the official zlib distribution doen't allow an out-of-tree build
+    # note: the official zlib distribution doesn't allow an out-of-tree build
     echo "Building zlib..." | tee -a $LOGFILE
-    cd $ROOT/3rdparty/zlib-$ZLIB_VERSION >> $LOGFILE 2>&1 || failure
+    cd $ROOT/3rdparty/zlib >> $LOGFILE 2>&1 || failure
     ./configure --static --prefix="$ROOT/install" >> $LOGFILE 2>&1 || failure
     make >> $LOGFILE 2>&1 || failure
     make install >> $LOGFILE 2>&1 || failure
@@ -742,7 +571,6 @@ build_gsl_ndk()
     store_build_state $BS_BUILD_GSL_NDK || failure
     return 0
 }
-
 
 
 build_fftw()
@@ -826,7 +654,7 @@ build_clfft()
     prepare_clfft $TAG_CLFFT || failure
 
     echo "Building CLFFT (this may take a while)..." | tee -a $LOGFILE
-    cd $ROOT/3rdparty/libclfft/src
+    cd $ROOT/3rdparty/libclfft/src || failure
     if [ "$1" == "$TARGET_LINUX_OCL" ]; then
         make >> $LOGFILE 2>&1 || failure
     elif [ "$1" == "$TARGET_MAC_OCL" ]; then
@@ -898,9 +726,6 @@ build_libxml_ndk()
 }
 
 
-
-
-
 build_boinc()
 {
     if [ $BUILDSTATE -ge $BS_BUILD_BOINC ]; then
@@ -957,47 +782,6 @@ build_boinc()
 }
 
 
-build_mingw()
-{
-    if [ $BUILDSTATE -ge $BS_BUILD_MINGW ]; then
-        return 0
-    fi
-
-    prepare_mingw || failure
-
-    TARGET_HOST=i586-pc-mingw32
-
-    echo "Building MinGW (this will take quite a while)..." | tee -a $LOGFILE
-    # note: the script's current config for unattended setup expects it to be run from three levels below root!
-    cd $ROOT/3rdparty/mingw/xscripts || failure
-
-    ./x86-mingw32-build.sh --unattended --no-post-clean $TARGET_HOST >> $LOGFILE 2>&1 || failure
-
-    store_build_state $BS_BUILD_MINGW
-    return 0
-}
-
-
-set_mingw()
-{
-    # general config
-    PREFIX=$ROOT/install
-    # the following target host spec is Debian specific!
-    # use "i586-pc-mingw32" when building MinGW automatically
-    TARGET_HOST=i686-w64-mingw32
-    BUILD_HOST=i386-linux
-    PATH_MINGW="$PREFIX/bin:$PREFIX/$TARGET_HOST/bin:$PATH"
-    PATH="$PATH_MINGW"
-    export PATH
-
-    export CC=`which ${TARGET_HOST}-gcc`
-    export CXX=`which ${TARGET_HOST}-g++`
-    export AR=`which ${TARGET_HOST}-ar`
-
-    export CPPFLAGS="-D_WIN32_WINDOWS=0x0410 -DMINGW_WIN32 $CPPFLAGS"
-    export CXXFLAGS="-gstabs -g3 $CXXFLAGS"
-}
-
 set_mingw64()
 {
     # general config
@@ -1012,8 +796,6 @@ set_mingw64()
     export CC=`which ${TARGET_HOST}-gcc`
     export CXX=`which ${TARGET_HOST}-g++`
     export AR=`which ${TARGET_HOST}-ar`
-
-    # export CPPFLAGS="-D_WIN32_WINDOWS=0x0410 -DMINGW_WIN32 $CPPFLAGS"
 }
 
 
@@ -1025,11 +807,6 @@ build_binutils_mingw()
 
     prepare_binutils || failure
 
-    echo "Patching binutils [pre-build]..." | tee -a $LOGFILE
-    # patch: fixed upstream but not yet released (as of 2.22)
-    cd $ROOT/3rdparty/binutils/bfd || failure
-    patch bfd-in.h < $ROOT/patches/binutils.bfd-in.h.mingw64.patch >> $LOGFILE 2>&1 || failure
-    patch bfd-in2.h < $ROOT/patches/binutils.bfd-in2.h.mingw64.patch >> $LOGFILE 2>&1 || failure
     echo "Building binutils (this may take a while)..." | tee -a $LOGFILE
     cd $ROOT/3rdparty/binutils || failure
     chmod +x configure >> $LOGFILE 2>&1 || failure
@@ -1045,8 +822,11 @@ build_binutils_mingw()
     cp $ROOT/3rdparty/binutils/include/demangle.h $ROOT/install/include >> $LOGFILE 2>&1 || failure
     cp $ROOT/3rdparty/binutils/include/libiberty.h $ROOT/install/include >> $LOGFILE 2>&1 || failure
     cp $ROOT/3rdparty/binutils/include/coff/internal.h $ROOT/install/include/coff >> $LOGFILE 2>&1 || failure
+    cp $ROOT/3rdparty/binutils/bfd/coff-bfd.h $ROOT/install/include >> $LOGFILE 2>&1 || failure
     cp $ROOT/3rdparty/binutils/bfd/libcoff.h $ROOT/install/include >> $LOGFILE 2>&1 || failure
     cp $ROOT/build/binutils/intl/libintl.a $ROOT/install/lib >> $LOGFILE 2>&1 || failure
+    cp $ROOT/build/binutils/libiberty/libiberty.a $ROOT/install/lib >> $LOGFILE 2>&1 || failure
+    cp $ROOT/build/binutils/bfd/config.h $ROOT/install/include/bfd/ >> $LOGFILE 2>&1 || failure
     echo "Successfully built and installed binutils!" | tee -a $LOGFILE
 
     store_build_state $BS_BUILD_BINUTILS_MINGW || failure
@@ -1121,7 +901,7 @@ build_clfft_mingw()
     prepare_clfft $TAG_CLFFT || failure
 
     echo "Building CLFFT (this may take a while)..." | tee -a $LOGFILE
-    cd $ROOT/3rdparty/libclfft/src
+    cd $ROOT/3rdparty/libclfft/src || failure
     make -f Makefile.mingw >> $LOGFILE 2>&1 || failure
     cp $ROOT/3rdparty/libclfft/include/clFFT.h $ROOT/install/include >> $LOGFILE 2>&1 || failure
     cp $ROOT/3rdparty/libclfft/lib/libclfft.a $ROOT/install/lib >> $LOGFILE 2>&1 || failure
@@ -1159,7 +939,6 @@ build_libxml_mingw()
 }
 
 
-
 build_boinc_ndk()
 {
     if [ $BUILDSTATE -ge $BS_BUILD_BOINC_NDK ]; then
@@ -1184,12 +963,10 @@ build_boinc_ndk()
 
     echo configuring ... 4
 
-
     $ROOT/3rdparty/boinc/configure --prefix=$ROOT/install --host=arm-linux --with-boinc-platform="arm-android-linux-gnu" --with-ssl=$TCINCLUDES --enable-shared=no --enable-static=yes --disable-server --disable-client --enable-install-headers --enable-libraries --disable-manager --disable-fcgi >> $LOGFILE 2>&1 || failure
 # following taken from build script in BOINC (android version)
     sed -e "s%^CLIENTLIBS *= *.*$%CLIENTLIBS = -lm $STDCPPTC%g" client/Makefile > client/Makefile.out
     mv client/Makefile.out client/Makefile
-
 
     echo "Building BOINC (this may take a while)..." | tee -a $LOGFILE
     make >> $LOGFILE 2>&1 || failure
@@ -1290,15 +1067,6 @@ build_einsteinradio()
     elif [ "$1" == "$TARGET_MAC_OCL" ]; then
         EINSTEINBINARY_TARGET=einsteinbinary_i686-apple-darwin__opencl
         cp -f $ROOT/src/Makefile.macos.opencl Makefile >> $LOGFILE 2>&1 || failure
-    elif [ "$1" == "$TARGET_WIN32" ]; then
-        EINSTEINBINARY_TARGET=einsteinbinary_windows_intelx86.exe
-        cp -f $ROOT/src/Makefile.mingw Makefile >> $LOGFILE 2>&1 || failure
-    elif [ "$1" == "$TARGET_WIN32_CUDA" ]; then
-        EINSTEINBINARY_TARGET=einsteinbinary_windows_intelx86__cuda.exe
-        cp -f $ROOT/src/Makefile.mingw.cuda Makefile >> $LOGFILE 2>&1 || failure
-    elif [ "$1" == "$TARGET_WIN32_OCL" ]; then
-        EINSTEINBINARY_TARGET=einsteinbinary_windows_intelx86__opencl.exe
-        cp -f $ROOT/src/Makefile.mingw.opencl Makefile >> $LOGFILE 2>&1 || failure
     elif [ "$1" == "$TARGET_WIN64" ]; then
         EINSTEINBINARY_TARGET=einsteinbinary_windows_x86_64.exe
         cp -f $ROOT/src/Makefile.mingw Makefile >> $LOGFILE 2>&1 || failure
@@ -1374,7 +1142,6 @@ build_android()
 
     prepare_ndk || failure
 
-
      build_zlib_ndk || failure
 # TODO include binutils if we get the stacktrace working for ARM
 #    build_binutils_ndk $1 || failure
@@ -1399,27 +1166,6 @@ build_mac()
     fi
     build_libxml $1 || failure
     build_boinc $1 || failure
-    build_einsteinradio $1 $2 || failure
-
-    return 0
-}
-
-
-build_win32()
-{
-    # no more prepare/build steps for MinGW
-    # we use Debian's MinGW with GCC 4.4 support
-    set_mingw || failure
-
-    build_zlib || failure
-    build_binutils_mingw || failure
-    build_gsl_mingw || failure
-    build_fftw_mingw $1 || failure
-    if [ "$1" == "$TARGET_WIN32_OCL" ]; then
-        build_clfft_mingw || failure
-    fi
-    build_libxml_mingw || failure
-    build_boinc_mingw || failure
     build_einsteinradio $1 $2 || failure
 
     return 0
@@ -1604,27 +1350,6 @@ case "$BUILDTARGET" in
         TARGET=$TARGET_MAC_OCL
         check_last_build "$BUILDTARGET" || failure
         echo "Building Mac OS X (Intel) OpenCL version:" | tee -a $LOGFILE
-        check_build_state || failure
-        ;;
-    "--win32")
-        TARGET=$TARGET_WIN32
-        BUILD_TYPE=$BUILD_TYPE_CROSS
-        check_last_build "$BUILDTARGET" || failure
-        echo "Building Win32 version:" | tee -a $LOGFILE
-        check_build_state || failure
-        ;;
-    "--win32-cuda")
-        TARGET=$TARGET_WIN32_CUDA
-        BUILD_TYPE=$BUILD_TYPE_CROSS
-        check_last_build "$BUILDTARGET" || failure
-        echo "Building Win32 CUDA version:" | tee -a $LOGFILE
-        check_build_state || failure
-        ;;
-    "--win32-opencl")
-        TARGET=$TARGET_WIN32_OCL
-        BUILD_TYPE=$BUILD_TYPE_CROSS
-        check_last_build "$BUILDTARGET" || failure
-        echo "Building Win32 OpenCL version:" | tee -a $LOGFILE
         check_build_state || failure
         ;;
     "--win64")
@@ -1824,30 +1549,6 @@ case $TARGET in
         check_prerequisites $TARGET_MAC_OCL || failure
         prepare_tree || failure
         build_mac $TARGET_MAC_OCL "$2" || failure
-        ;;
-    $TARGET_WIN32)
-        export CFLAGS="-mfpmath=sse -msse $CFLAGS"
-        export CXXFLAGS="-mfpmath=sse -msse $CXXFLAGS"
-
-        check_prerequisites $TARGET_WIN32 || failure
-        prepare_tree || failure
-        build_win32 $TARGET_WIN32 "$2" || failure
-        ;;
-    $TARGET_WIN32_CUDA)
-        export CFLAGS="-mfpmath=sse -msse $CFLAGS"
-        export CXXFLAGS="-mfpmath=sse -msse $CXXFLAGS"
-
-        check_prerequisites $TARGET_WIN32_CUDA || failure
-        prepare_tree || failure
-        build_win32 $TARGET_WIN32_CUDA "$2" || failure
-        ;;
-    $TARGET_WIN32_OCL)
-        export CFLAGS="-mfpmath=sse -msse $CFLAGS"
-        export CXXFLAGS="-mfpmath=sse -msse $CXXFLAGS"
-
-        check_prerequisites  $TARGET_WIN32_OCL || failure
-        prepare_tree || failure
-        build_win32 $TARGET_WIN32_OCL "$2" || failure
         ;;
     $TARGET_WIN64)
         export CFLAGS="-m64 $CFLAGS"

@@ -4,7 +4,7 @@
  #define F_DLL           (0x2000)
  
  /* Extra structure which is used in the optional header.  */
--typedef struct _IMAGE_DATA_DIRECTORY 
+-typedef struct _IMAGE_DATA_DIRECTORY
 -{
 -  bfd_vma VirtualAddress;
 -  long    Size;

@@ -64,6 +64,7 @@ SIZE_T GetModuleBase(DWORD64 dwAddress)
 
 #ifdef HAVE_BFD
 
+#include <bfd/config.h>
 #include <bfd.h>
 #include <demangle.h>
 #include "coff/internal.h"
@@ -113,16 +114,28 @@ static void find_address_in_section (bfd *abfd, asection *section, PTR data)
     if (info->found)
         return;
 
+#ifdef bfd_get_section_flags
     if ((bfd_get_section_flags (abfd, section) & SEC_ALLOC) == 0)
+#else
+    if ((bfd_section_flags (section) & SEC_ALLOC) == 0)
+#endif
         return;
 
+#ifdef bfd_get_section_vma
     vma = bfd_get_section_vma (abfd, section);
+#else
+    vma = bfd_section_vma (section);
+#endif
+#ifdef bfd_get_section_size
     size = bfd_get_section_size (section);
+#else
+    size = bfd_section_size (section);
+#endif
 
-    if (info->pc < (vma = bfd_get_section_vma (abfd, section)))
+    if (info->pc < vma)
         return;
 
-    if (info->pc >= vma + (size = bfd_get_section_size (section)))
+    if (info->pc >= vma + size)
         return;
 
     info->found = bfd_find_nearest_line (abfd, section, info->syms, info->pc - vma, &info->filename, &info->functionname, &info->line);
