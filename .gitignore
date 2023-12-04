@@ -1,0 +1,15 @@
+# folders
+3rdparty
+build
+install
+dist
+
+# pattern
+*.o
+*~
+
+# files
+.buildstate
+.lastbuild
+build.log
+src/erp_git_version.h
