@@ -137,6 +137,7 @@ distclean()
 
     rm -f .lastbuild || failure
     rm -f .buildstate || failure
+    rm -f build.log
 
     return 0
 }
@@ -195,7 +196,7 @@ check_prerequisites()
     echo "Checking prerequisites..." | tee -a $LOGFILE
 
     # required toolchain
-    TOOLS="automake autoconf m4 curl git tar patch gcc g++ ld libtool ar pkg-config x86_64-w64-mingw32"
+    TOOLS="automake autoconf m4 curl git tar patch gcc g++ ld libtool ar pkg-config x86_64-w64-mingw32-g++"
 
     for tool in $TOOLS; do
         if ! ( type $tool >/dev/null 2>&1 ); then
@@ -440,14 +441,19 @@ build_binutils()
         return 0
     fi
 
-    prepare_binutils || failure
-
     # build binutils (libbfd) for linux only
     if [ "$1" == "$TARGET_LINUX" -o "$1" == "$TARGET_LINUX_CUDA" -o "$1" == "$TARGET_LINUX_OCL" ]; then
         echo "Patching binutils..." | tee -a $LOGFILE
-        # patch: omit subdirs when building bfd (avoids build error and we don't need 'em anyway)
+        # patch: fixes to binutils that have a horrible build system that errors out in every version
         cd $ROOT/3rdparty/binutils/bfd || failure
-        patch Makefile.in < $ROOT/patches/binutils.Makefile.in.patch >> $LOGFILE 2>&1 || failure
+        (OUT="$(patch -N Makefile.in < $ROOT/patches/binutils.bfd.Makefile.in.patch | tee -a $LOGFILE)" || echo "${OUT}" | grep "Skipping patch" -q) || failure
+        cd $ROOT/3rdparty/binutils/gas || failure
+        (OUT="$(patch -N Makefile.in < $ROOT/patches/binutils.gas.Makefile.in.patch | tee -a $LOGFILE)" || echo "${OUT}" | grep "Skipping patch" -q) || failure
+        cd $ROOT/3rdparty/binutils/gdb/nat/ || failure
+        (OUT="$(patch -N amd64-linux-siginfo.c < $ROOT/patches/binutils.amd64-linux-siginfo.c.patch | tee -a $LOGFILE)" || echo "${OUT}" | grep "Skipping patch" -q) || failure
+        cd $ROOT/3rdparty/binutils/ || failure
+        # Skip building doc files using Sith force
+        (find . -type f -name "Makefile.in" -exec sed -i 's/^INFO_DEPS/#INFO_DEPS/g' {} +) >> $LOGFILE 2>&1 || failure
         echo "Building binutils (this may take a while)..." | tee -a $LOGFILE
         cd $ROOT/3rdparty/binutils || failure
         chmod +x configure >> $LOGFILE 2>&1 || failure
@@ -529,10 +535,9 @@ build_gsl()
         return 0
     fi
 
-    prepare_gsl || failure
-
     echo "Building GSL (this may take a while)..." | tee -a $LOGFILE
     cd $ROOT/3rdparty/gsl || failure
+    ./autogen.sh >> $LOGFILE 2>&1 || failure
     chmod +x configure >> $LOGFILE 2>&1 || failure
     cd $ROOT/build/gsl || failure
     
@@ -556,8 +561,6 @@ build_gsl_ndk()
     if [ $BUILDSTATE -ge $BS_BUILD_GSL_NDK ]; then
         return 0
     fi
-
-    prepare_gsl || failure
 
     echo "Building GSL (this may take a while)..." | tee -a $LOGFILE
     cd $ROOT/3rdparty/gsl || failure
@@ -659,7 +662,7 @@ build_clfft()
         make >> $LOGFILE 2>&1 || failure
     elif [ "$1" == "$TARGET_MAC_OCL" ]; then
         make >> $LOGFILE 2>&1 || failure
-    elif [ "$1" == "$TARGET_WIN32_OCL" ]; then
+    elif [ "$1" == "$TARGET_WIN64_OCL" ]; then
         make -f Makefile.mingw >> $LOGFILE 2>&1 || failure
     fi
     cp $ROOT/3rdparty/libclfft/include/clFFT.h $ROOT/install/include >> $LOGFILE 2>&1 || failure
@@ -676,8 +679,6 @@ build_libxml()
     if [ $BUILDSTATE -ge $BS_BUILD_LIBXML ]; then
         return 0
     fi
-
-    prepare_libxml || failure
 
     echo "Building libxml2 (this may take a while)..." | tee -a $LOGFILE
     cd $ROOT/3rdparty/libxml2 || failure
@@ -704,8 +705,6 @@ build_libxml_ndk()
         return 0
     fi
 
-    prepare_libxml || failure
-
     echo "Building libxml2 (this may take a while)..." | tee -a $LOGFILE
 
 # TODO: do it nicer
@@ -730,12 +729,6 @@ build_boinc()
 {
     if [ $BUILDSTATE -ge $BS_BUILD_BOINC ]; then
         return 0
-    fi
-
-    if [ "$1" == "$TARGET_DAEMONS" ]; then
-        prepare_boinc $TAG_DAEMONS || failure
-    else
-        prepare_boinc $TAG_APPS || failure
     fi
 
     if [ "$BUILD_TYPE" == "$BUILD_TYPE_CROSS" ]; then
@@ -805,8 +798,6 @@ build_binutils_mingw()
         return 0
     fi
 
-    prepare_binutils || failure
-
     echo "Building binutils (this may take a while)..." | tee -a $LOGFILE
     cd $ROOT/3rdparty/binutils || failure
     chmod +x configure >> $LOGFILE 2>&1 || failure
@@ -839,8 +830,6 @@ build_gsl_mingw()
     if [ $BUILDSTATE -ge $BS_BUILD_GSL_MINGW ]; then
         return 0
     fi
-
-    prepare_gsl || failure
 
     echo "Building GSL (this may take a while)..." | tee -a $LOGFILE
     cd $ROOT/3rdparty/gsl || failure
@@ -918,8 +907,6 @@ build_libxml_mingw()
         return 0
     fi
 
-    prepare_libxml || failure
-
     echo "Building libxml2 (this may take a while)..." | tee -a $LOGFILE
     cd $ROOT/3rdparty/libxml2 || failure
     chmod +x configure >> $LOGFILE 2>&1 || failure
@@ -944,8 +931,6 @@ build_boinc_ndk()
     if [ $BUILDSTATE -ge $BS_BUILD_BOINC_NDK ]; then
         return 0
     fi
-
-    prepare_boinc $TAG_APPS || failure
 
     prepare_openssl_cross || failure
 
@@ -983,8 +968,6 @@ build_boinc_mingw()
     if [ $BUILDSTATE -ge $BS_BUILD_BOINC_MINGW ]; then
         return 0
     fi
-
-    prepare_boinc $TAG_APPS || failure
 
     cd $ROOT/3rdparty/boinc/lib || failure
     echo "Building BOINC (this may take a while)..." | tee -a $LOGFILE
@@ -1214,9 +1197,6 @@ print_usage()
     echo "  --mac-altivec"
     echo "  --mac-cuda"
     echo "  --mac-opencl"
-    echo "  --win32"
-    echo "  --win32-cuda"
-    echo "  --win32-opencl"
     echo "  --win64"
     echo "  --win64-cuda"
     echo "  --win64-opencl"

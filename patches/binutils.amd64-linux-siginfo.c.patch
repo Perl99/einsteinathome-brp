@@ -1,0 +1,14 @@
+===================================================================
+diff --git a/gdb/nat/amd64-linux-siginfo.c b/gdb/nat/amd64-linux-siginfo.c
+--- a/gdb/nat/amd64-linux-siginfo.c	(revision f35674005e609660f5f45005a9e095541ca4c5fe)
++++ b/gdb/nat/amd64-linux-siginfo.c	(date 1701813222247)
+@@ -17,8 +17,8 @@
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+
+-#include <signal.h>
+ #include "gdbsupport/common-defs.h"
++#include <signal.h>
+ #include "amd64-linux-siginfo.h"
+
+ #define GDB_SI_SIZE 128

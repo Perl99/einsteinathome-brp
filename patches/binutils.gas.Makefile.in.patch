@@ -1,0 +1,13 @@
+===================================================================
+diff --git a/gas/Makefile.in b/gas/Makefile.in
+--- a/gas/Makefile.in	(revision f35674005e609660f5f45005a9e095541ca4c5fe)
++++ b/gas/Makefile.in	(date 1701816007906)
+@@ -421,7 +421,7 @@
+ zlibinc = @zlibinc@
+ AUTOMAKE_OPTIONS = dejagnu foreign no-dist subdir-objects
+ ACLOCAL_AMFLAGS = -I .. -I ../config -I ../bfd
+-SUBDIRS = doc po
++#SUBDIRS = doc po
+ tooldir = $(exec_prefix)/$(target_alias)
+
+ # This is where we get zlib from.  zlibdir is -L../zlib and zlibinc is
