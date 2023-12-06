@@ -131,6 +131,7 @@ distclean()
     echo "Purging build system..." | tee -a $LOGFILE
 
     rm -rf 3rdparty/fftw || failure
+    rm -rf 3rdparty/libxml2 || failure
     rm -rf build || failure
     rm -rf install || failure
     rm -rf doc/html || failure
@@ -941,6 +942,8 @@ build_libxml_mingw()
     if [ $BUILDSTATE -ge $BS_BUILD_LIBXML_MINGW ]; then
         return 0
     fi
+
+    prepare_libxml || failure
 
     echo "Building libxml2 (this may take a while)..." | tee -a $LOGFILE
     cd $ROOT/3rdparty/libxml2 || failure
