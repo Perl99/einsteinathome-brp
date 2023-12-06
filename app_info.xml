@@ -1,7 +1,7 @@
 <app_info>
 
     <file_info>
-        <name>einsteinbinary_BRP4G_0.9_x86_64-pc-linux-gnu</name>
+        <name>einsteinbinary_BRP4G_0.10_x86_64-pc-linux-gnu</name>
         <executable/>
     </file_info>
 
@@ -24,7 +24,7 @@
     <app_version>
         <app_name>einsteinbinary_BRP4G</app_name>
         <platform>x86_64-pc-linux-gnu</platform>
-        <version_num>90</version_num>
+        <version_num>10</version_num>
         <api_version>7.1.0</api_version>
         <plan_class>BRP4X64</plan_class>
         <file_ref>

@@ -5,7 +5,6 @@
     <mapping directory="$PROJECT_DIR$/3rdparty/binutils" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/3rdparty/boinc" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/3rdparty/gsl" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/3rdparty/libxml2" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/3rdparty/zlib" vcs="Git" />
   </component>
 </project>

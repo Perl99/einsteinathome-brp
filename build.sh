@@ -27,7 +27,7 @@ ROOT=`pwd`
 LOGFILE=$ROOT/build.log
 ARCH=`uname -m`
 
-export MAKEFLAGS="-j$(nproc)"
+export MAKEFLAGS="-j$(( $(nproc) / 2 ))"
 
 # NVIDIA CUDA compiler wrapper options
 export NVCCFLAGS="-Xptxas -v -arch=compute_10 -code=compute_10 -g --verbose"
@@ -230,6 +230,7 @@ prepare_tree()
     mkdir -p install/bin >> $LOGFILE || failure
     mkdir -p install/include >> $LOGFILE || failure
     mkdir -p install/include/coff >> $LOGFILE || failure
+    mkdir -p install/include/bfd >> $LOGFILE || failure
     mkdir -p install/lib >> $LOGFILE || failure
 
     store_build_state $BS_PREPARE_TREE
@@ -353,6 +354,23 @@ prepare_zlib()
     sed s%/usr/bin/libtool%libtool% zlib/configure > $ROOT/build/zlib/configure 2>>$LOGFILE || failure
 }
 
+prepare_binutils()
+{
+    echo "Patching binutils..." | tee -a $LOGFILE
+    # patch: fixes to binutils that have a horrible build system that errors out in every version
+    cd $ROOT/3rdparty/binutils/bfd || failure
+    (OUT="$(patch -N Makefile.in < $ROOT/patches/binutils.bfd.Makefile.in.patch | tee -a $LOGFILE)" || echo "${OUT}" | grep "Skipping patch" -q) || failure
+    cd $ROOT/3rdparty/binutils/gas || failure
+    (OUT="$(patch -N Makefile.in < $ROOT/patches/binutils.gas.Makefile.in.patch | tee -a $LOGFILE)" || echo "${OUT}" | grep "Skipping patch" -q) || failure
+    cd $ROOT/3rdparty/binutils/gdb/nat/ || failure
+    (OUT="$(patch -N amd64-linux-siginfo.c < $ROOT/patches/binutils.amd64-linux-siginfo.c.patch | tee -a $LOGFILE)" || echo "${OUT}" | grep "Skipping patch" -q) || failure
+    cd $ROOT/3rdparty/binutils/ || failure
+    # Skip building doc files using Sith force
+    (find . -type f -name "Makefile.in" -exec sed -i 's/^INFO_DEPS/#INFO_DEPS/g' {} +) >> $LOGFILE 2>&1 || failure
+
+    cd $ROOT/3rdparty/binutils || failure
+    chmod +x configure >> $LOGFILE 2>&1 || failure
+}
 
 prepare_fftw()
 {
@@ -462,22 +480,11 @@ build_binutils()
         return 0
     fi
 
+    prepare_binutils || failure
+
     # build binutils (libbfd) for linux only
     if [ "$1" == "$TARGET_LINUX" -o "$1" == "$TARGET_LINUX_CUDA" -o "$1" == "$TARGET_LINUX_OCL" ]; then
-        echo "Patching binutils..." | tee -a $LOGFILE
-        # patch: fixes to binutils that have a horrible build system that errors out in every version
-        cd $ROOT/3rdparty/binutils/bfd || failure
-        (OUT="$(patch -N Makefile.in < $ROOT/patches/binutils.bfd.Makefile.in.patch | tee -a $LOGFILE)" || echo "${OUT}" | grep "Skipping patch" -q) || failure
-        cd $ROOT/3rdparty/binutils/gas || failure
-        (OUT="$(patch -N Makefile.in < $ROOT/patches/binutils.gas.Makefile.in.patch | tee -a $LOGFILE)" || echo "${OUT}" | grep "Skipping patch" -q) || failure
-        cd $ROOT/3rdparty/binutils/gdb/nat/ || failure
-        (OUT="$(patch -N amd64-linux-siginfo.c < $ROOT/patches/binutils.amd64-linux-siginfo.c.patch | tee -a $LOGFILE)" || echo "${OUT}" | grep "Skipping patch" -q) || failure
-        cd $ROOT/3rdparty/binutils/ || failure
-        # Skip building doc files using Sith force
-        (find . -type f -name "Makefile.in" -exec sed -i 's/^INFO_DEPS/#INFO_DEPS/g' {} +) >> $LOGFILE 2>&1 || failure
         echo "Building binutils (this may take a while)..." | tee -a $LOGFILE
-        cd $ROOT/3rdparty/binutils || failure
-        chmod +x configure >> $LOGFILE 2>&1 || failure
         cd $ROOT/build/binutils || failure
         CPPFLAGS="-I$ROOT/install/include $CPPFLAGS" LDFLAGS="-L$ROOT/install/lib $LDFLAGS" $ROOT/3rdparty/binutils/configure --prefix=$ROOT/install --enable-shared=no --enable-static=yes --disable-werror >> $LOGFILE 2>&1 || failure
         CPPFLAGS="-I$ROOT/install/include $CPPFLAGS" LDFLAGS="-L$ROOT/install/lib $LDFLAGS" make configure-bfd >> $LOGFILE 2>&1 || failure
@@ -817,7 +824,7 @@ set_mingw64()
     PREFIX=$ROOT/install
     # the following target host spec is Debian specific!
     TARGET_HOST=x86_64-w64-mingw32
-    BUILD_HOST=i386-linux
+    BUILD_HOST=x86_64-linux-gnu
     PATH_MINGW="$PREFIX/bin:$PREFIX/$TARGET_HOST/bin:$PATH"
     PATH="$PATH_MINGW"
     export PATH
@@ -834,13 +841,14 @@ build_binutils_mingw()
         return 0
     fi
 
+    prepare_binutils || failure
+
     echo "Building binutils (this may take a while)..." | tee -a $LOGFILE
-    cd $ROOT/3rdparty/binutils || failure
-    chmod +x configure >> $LOGFILE 2>&1 || failure
     cd $ROOT/build/binutils || failure
     $ROOT/3rdparty/binutils/configure --host=$TARGET_HOST --build=$BUILD_HOST --prefix=$PREFIX --enable-shared=no --enable-static=yes >> $LOGFILE 2>&1 || failure
     make >> $LOGFILE 2>&1 || failure
     make install >> $LOGFILE 2>&1 || failure
+
     echo "Patching binutils [post-build]..." | tee -a $LOGFILE
     # patch: remove previous declarations by winnt.h
     cd $ROOT/3rdparty/binutils/include/coff || failure
