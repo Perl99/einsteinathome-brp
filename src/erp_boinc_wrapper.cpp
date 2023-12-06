@@ -490,7 +490,7 @@ int main(int argc, char**argv)
 
     logMessage(info, true, "Application startup - thank you for supporting Einstein@Home!\n");
     logMessage(info, true, "Compiled with flags: %s \n", CXX_FLAGS);
-	logMessage(info, true, "Improvements: none (basic version, recompiled)\n");
+	logMessage(info, true, "Changes: removed -ffast-math to check performance and valitify impact\n");
 
     logMessage(debug, true, "Setting up diagnostics and exception handling...\n");
 
