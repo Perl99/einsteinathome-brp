@@ -141,6 +141,8 @@ distclean()
     rm -f .buildstate || failure
     rm -f build.log
 
+    git submodule foreach --recursive git reset --hard
+
     return 0
 }
 
@@ -372,6 +374,22 @@ prepare_binutils()
     chmod +x configure >> $LOGFILE 2>&1 || failure
 }
 
+prepare_gsl()
+{
+    echo "Generating configure script for GSL..." | tee -a $LOGFILE
+    cd $ROOT/3rdparty/gsl || failure
+    ./autogen.sh >> $LOGFILE 2>&1 || failure
+    chmod +x configure >> $LOGFILE 2>&1 || failure
+
+    echo "Patching GSL..." | tee -a $LOGFILE
+    # patch: skip building doc
+    cd $ROOT/3rdparty/gsl || failure
+    (OUT="$(patch -N Makefile.in < $ROOT/patches/gsl.Makefile.in.patch | tee -a $LOGFILE)" || echo "${OUT}" | grep "Skipping patch" -q) || failure
+    cd $ROOT/3rdparty/gsl/ || failure
+    # Skip building doc files using Sith force
+    (find . -type f -name "Makefile.in" -exec sed -i 's/^INFO_DEPS/#INFO_DEPS/g' {} +) >> $LOGFILE 2>&1 || failure
+}
+
 prepare_fftw()
 {
     echo "Retrieving FFTW3 $FFTW_VERSION (this may take a while)..." | tee -a $LOGFILE
@@ -563,18 +581,7 @@ build_gsl()
         return 0
     fi
 
-    echo "Generating configure script for GSL..." | tee -a $LOGFILE
-    cd $ROOT/3rdparty/gsl || failure
-    ./autogen.sh >> $LOGFILE 2>&1 || failure
-    chmod +x configure >> $LOGFILE 2>&1 || failure
-
-    echo "Patching GSL..." | tee -a $LOGFILE
-    # patch: skip building doc
-    cd $ROOT/3rdparty/gsl || failure
-    (OUT="$(patch -N Makefile.in < $ROOT/patches/gsl.Makefile.in.patch | tee -a $LOGFILE)" || echo "${OUT}" | grep "Skipping patch" -q) || failure
-    cd $ROOT/3rdparty/gsl/ || failure
-    # Skip building doc files using Sith force
-    (find . -type f -name "Makefile.in" -exec sed -i 's/^INFO_DEPS/#INFO_DEPS/g' {} +) >> $LOGFILE 2>&1 || failure
+    prepare_gsl || failure
 
     echo "Building GSL (this may take a while)..." | tee -a $LOGFILE
     cd $ROOT/build/gsl || failure
@@ -600,9 +607,9 @@ build_gsl_ndk()
         return 0
     fi
 
+    prepare_gsl || failure
+
     echo "Building GSL (this may take a while)..." | tee -a $LOGFILE
-    cd $ROOT/3rdparty/gsl || failure
-    chmod +x configure >> $LOGFILE 2>&1 || failure
     cd $ROOT/build/gsl || failure
     $ROOT/3rdparty/gsl/configure --prefix=$ROOT/install --host=$TARGET_HOST --build=$BUILD_HOST  --enable-shared=no --enable-static=yes CFLAGS="-g -O2 $CFLAGS" >> $LOGFILE 2>&1 || failure
     make >> $LOGFILE 2>&1 || failure
@@ -875,9 +882,10 @@ build_gsl_mingw()
         return 0
     fi
 
+    prepare_gsl || failure
+
     echo "Building GSL (this may take a while)..." | tee -a $LOGFILE
     cd $ROOT/3rdparty/gsl || failure
-    chmod +x configure >> $LOGFILE 2>&1 || failure
     if [ -f "$PREFIX/$TARGET_HOST/bin/$TARGET_HOST-gsl-config" ]; then
         GSL_CONFIG="$PREFIX/$TARGET_HOST/bin/$TARGET_HOST-gsl-config"
         export GSL_CONFIG
