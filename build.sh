@@ -535,10 +535,20 @@ build_gsl()
         return 0
     fi
 
-    echo "Building GSL (this may take a while)..." | tee -a $LOGFILE
+    echo "Generating configure script for GSL..." | tee -a $LOGFILE
     cd $ROOT/3rdparty/gsl || failure
     ./autogen.sh >> $LOGFILE 2>&1 || failure
     chmod +x configure >> $LOGFILE 2>&1 || failure
+
+    echo "Patching GSL..." | tee -a $LOGFILE
+    # patch: skip building doc
+    cd $ROOT/3rdparty/gsl || failure
+    (OUT="$(patch -N Makefile.in < $ROOT/patches/gsl.Makefile.in.patch | tee -a $LOGFILE)" || echo "${OUT}" | grep "Skipping patch" -q) || failure
+    cd $ROOT/3rdparty/gsl/ || failure
+    # Skip building doc files using Sith force
+    (find . -type f -name "Makefile.in" -exec sed -i 's/^INFO_DEPS/#INFO_DEPS/g' {} +) >> $LOGFILE 2>&1 || failure
+
+    echo "Building GSL (this may take a while)..." | tee -a $LOGFILE
     cd $ROOT/build/gsl || failure
     
     if [ "$BUILD_TYPE" == "$BUILD_TYPE_CROSS"  ]; then
@@ -680,9 +690,12 @@ build_libxml()
         return 0
     fi
 
-    echo "Building libxml2 (this may take a while)..." | tee -a $LOGFILE
+    echo "Generating configure script for libxml2..." | tee -a $LOGFILE
     cd $ROOT/3rdparty/libxml2 || failure
+    autoconf >> $LOGFILE 2>&1 || failure
     chmod +x configure >> $LOGFILE 2>&1 || failure
+
+    echo "Building libxml2 (this may take a while)..." | tee -a $LOGFILE
     cd $ROOT/build/libxml2 || failure
     if [ "$BUILD_TYPE" == "$BUILD_TYPE_CROSS" ]; then
       $ROOT/3rdparty/libxml2/configure --host=$TARGET_HOST --build=$BUILD_HOST  --prefix=$ROOT/install --without-zlib --enable-shared=no --enable-static=yes --without-python >> $LOGFILE 2>&1 || failure
