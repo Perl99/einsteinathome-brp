@@ -34,6 +34,7 @@ export NVCCFLAGS="-Xptxas -v -arch=compute_10 -code=compute_10 -g --verbose"
 
 # component versions
 FFTW_VERSION=3.3.2
+LIBXML_VERSION=2.6.32
 OPENSSL_VERSION=1.0.1l
 
 # git tags
@@ -397,6 +398,25 @@ prepare_clfft()
     return 0
 }
 
+# libxml2 from git requires regenerating "configure" script, but using simple commands is not enough, so maybe it is not worth the hassle
+prepare_libxml()
+{
+    echo "Preparing libxml2..." | tee -a $LOGFILE
+    mkdir -p $ROOT/build/libxml2 >> $LOGFILE || failure
+
+    echo "Retrieving libxml2 $LIBXML_VERSION (this may take a while)..." | tee -a $LOGFILE
+    cd $ROOT/3rdparty || failure
+    rm -f libxml2-sources-$LIBXML_VERSION.tar.gz >> $LOGFILE 2>&1 || failure
+    curl ftp://xmlsoft.org/libxml2/old/libxml2-sources-$LIBXML_VERSION.tar.gz -o libxml2-sources-$LIBXML_VERSION.tar.gz >> $LOGFILE 2>&1 || failure
+    tar -xzf libxml2-sources-$LIBXML_VERSION.tar.gz >> $LOGFILE 2>&1 || failure
+    rm libxml2-sources-$LIBXML_VERSION.tar.gz >> $LOGFILE 2>&1 || failure
+    # substitute old source tree
+    rm -rf libxml2 >> $LOGFILE 2>&1 || failure
+    mv libxml2-$LIBXML_VERSION libxml2 >> $LOGFILE 2>&1 || failure
+
+    return 0
+}
+
 prepare_openssl_cross() 
 {
         echo "Retrieving openssl, required by BOINC" | tee -a $LOGFILE
@@ -690,12 +710,12 @@ build_libxml()
         return 0
     fi
 
-    echo "Generating configure script for libxml2..." | tee -a $LOGFILE
-    cd $ROOT/3rdparty/libxml2 || failure
-    autoconf >> $LOGFILE 2>&1 || failure
-    chmod +x configure >> $LOGFILE 2>&1 || failure
+    prepare_libxml || failure
 
     echo "Building libxml2 (this may take a while)..." | tee -a $LOGFILE
+    cd $ROOT/3rdparty/libxml2 || failure
+    chmod +x configure >> $LOGFILE 2>&1 || failure
+
     cd $ROOT/build/libxml2 || failure
     if [ "$BUILD_TYPE" == "$BUILD_TYPE_CROSS" ]; then
       $ROOT/3rdparty/libxml2/configure --host=$TARGET_HOST --build=$BUILD_HOST  --prefix=$ROOT/install --without-zlib --enable-shared=no --enable-static=yes --without-python >> $LOGFILE 2>&1 || failure
@@ -717,6 +737,8 @@ build_libxml_ndk()
     if [ $BUILDSTATE -ge $BS_BUILD_LIBXML_NDK ]; then
         return 0
     fi
+
+    prepare_libxml || failure
 
     echo "Building libxml2 (this may take a while)..." | tee -a $LOGFILE
 

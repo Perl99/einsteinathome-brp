@@ -118,7 +118,7 @@ int tear_down_fft(DIfloatPtr output)
 #ifndef BRP_FFT_INPLACE
     free(output.host_ptr);
     fftwf_free(t_series_resamp_fft);
-#endif;
+#endif
     fftwf_destroy_plan(fft_plan);
 
     return 0;

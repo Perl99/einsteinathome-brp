@@ -1,5 +1,6 @@
 # folders
 3rdparty/fftw
+3rdparty/libxml2
 build
 install
 dist

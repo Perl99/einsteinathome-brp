@@ -6,6 +6,8 @@
       <excludeFolder url="file://$MODULE_DIR$/3rdparty/gsl/autom4te.cache" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
       <excludeFolder url="file://$MODULE_DIR$/install" />
+      <excludeFolder url="file://$MODULE_DIR$/3rdparty/boinc/autom4te.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/dist" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

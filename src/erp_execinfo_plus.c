@@ -22,8 +22,10 @@
 
 #define HAVE_DECL_BASENAME 1
 
-#include "sys/stat.h"
+// Must be before system headers
 #include "sysdep.h"
+
+#include "sys/stat.h"
 #include "bfd.h"
 #include "libiberty.h"
 #include "demangle.h"
@@ -95,14 +97,25 @@ static void find_address_in_section(bfd *abfd, asection *section, void *data ATT
     if (found)
         return;
 
-    if ((bfd_get_section_flags (abfd, section)& SEC_ALLOC) == 0)
-        return;
+#ifdef bfd_get_section_flags
+	if ((bfd_get_section_flags (abfd, section) & SEC_ALLOC) == 0)
+#else
+	if ((bfd_section_flags (section) & SEC_ALLOC) == 0)
+#endif
 
-    vma = bfd_get_section_vma (abfd, section);
+#ifdef bfd_get_section_vma // Perl99: binutils changed the API
+		vma = bfd_get_section_vma (abfd, section);
+#else
+		vma = bfd_section_vma (section);
+#endif
     if (pc < vma)
         return;
 
-    size = bfd_get_section_size (section);
+#ifdef bfd_get_section_size // Perl99: binutils changed the API
+	size = bfd_get_section_size (section);
+#else
+	size = bfd_section_size (section);
+#endif
     if (pc >= vma + size)
         return;
 
@@ -336,7 +349,11 @@ void report(const char * format, va_list args)
     putc ('\n', ostream);
 }
 
-void fatal VPARAMS ((const char *format, ...))
+// Obsolete macros that are no longer in binutils
+#define VA_OPEN(AP, VAR)	{ va_list AP; va_start(AP, VAR); { struct Qdmy
+#define VA_CLOSE(AP)		} va_end(AP); }
+#define VA_FIXEDARG(AP, T, N)	struct Qdmy
+void fatal(const char *format, ...)
 {
     VA_OPEN (args, format);
     VA_FIXEDARG (args, const char *, format);
@@ -345,7 +362,7 @@ void fatal VPARAMS ((const char *format, ...))
     VA_CLOSE (args);
 }
 
-void non_fatal VPARAMS ((const char *format, ...))
+void non_fatal(const char *format, ...)
 {
     VA_OPEN (args, format);
     VA_FIXEDARG (args, const char *, format);

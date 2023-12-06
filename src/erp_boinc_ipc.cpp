@@ -59,7 +59,7 @@ void erp_update_shmem(void)
             powerSpectrumString	<< setw(2) << setfill('0') << hex
             << (int)erp_search_info.power_spectrum[i];
         }
-        catch(ios_base::failure)
+        catch(ios_base::failure&)
         {
             fprintf(stderr, "Error preparing power spectrum shared memory data!\n");
         }
@@ -158,7 +158,7 @@ void erp_update_shmem(void)
         converter << boinc_status.max_working_set_size;
         xmlNewChild(boincStatusNode, NULL, BAD_CAST("max_working_set_size"), BAD_CAST(converter.str().c_str()));
     }
-    catch(ios_base::failure) {
+    catch(ios_base::failure&) {
         fprintf(stderr, "Error converting shared memory data!\n");
     }
 
