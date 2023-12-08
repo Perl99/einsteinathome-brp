@@ -151,6 +151,7 @@ distclean()
 
     rm -f .lastbuild || failure
     rm -f .buildstate || failure
+    rm -f .build.log || failure
 
     return 0
 }
