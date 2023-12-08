@@ -210,7 +210,7 @@ check_prerequisites()
     echo "Checking prerequisites..." | tee -a $LOGFILE
 
     # required toolchain
-    TOOLS="automake autoconf m4 curl git tar patch gcc g++ ld libtool ar pkg-config"
+    TOOLS="automake autoconf m4 curl git tar patch gcc g++ ld libtool ar pkg-config x86_64-w64-mingw32-g++"
 
     for tool in $TOOLS; do
         if ! ( type $tool >/dev/null 2>&1 ); then
@@ -1006,7 +1006,7 @@ set_mingw64()
     PREFIX=$ROOT/install
     # the following target host spec is Debian specific!
     TARGET_HOST=x86_64-w64-mingw32
-    BUILD_HOST=i386-linux
+    BUILD_HOST=x86_64
     PATH_MINGW="$PREFIX/bin:$PREFIX/$TARGET_HOST/bin:$PATH"
     PATH="$PATH_MINGW"
     export PATH
@@ -1123,7 +1123,7 @@ build_clfft_mingw()
     prepare_clfft $TAG_CLFFT || failure
 
     echo "Building CLFFT (this may take a while)..." | tee -a $LOGFILE
-    cd $ROOT/3rdparty/libclfft/src
+    cd $ROOT/3rdparty/libclfft/src || failure
     make -f Makefile.mingw >> $LOGFILE 2>&1 || failure
     cp $ROOT/3rdparty/libclfft/include/clFFT.h $ROOT/install/include >> $LOGFILE 2>&1 || failure
     cp $ROOT/3rdparty/libclfft/lib/libclfft.a $ROOT/install/lib >> $LOGFILE 2>&1 || failure
