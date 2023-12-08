@@ -23,7 +23,7 @@
 
 ### globals ###############################################################
 
-#export MAKEFLAGS="-j$(nproc)"
+export MAKEFLAGS="-j$(nproc)"
 ROOT=`pwd`
 PATH_ORG="$PATH"
 PATH_MINGW="$PATH"
