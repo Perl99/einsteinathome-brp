@@ -548,12 +548,13 @@ prepare_boinc()
         rm -rf $ROOT/3rdparty/boinc >> $LOGFILE || failure
 
         echo "Retrieving BOINC (tag: $1) (this may take a while)..." | tee -a $LOGFILE
+        cd $ROOT/3rdparty-git/boinc || failure
+        git remote update >> $LOGFILE  2>&1 || failure
+        git fetch --tags >> $LOGFILE  2>&1 || failure
+        git checkout -f $1
+
         cd $ROOT/3rdparty || failure
-        if [ ".$1" == ".$TAG_DAEMONS" ]; then
-            git clone git@gitlab.aei.uni-hannover.de:einsteinathome/boinc-server.git boinc >> $LOGFILE 2>&1 || failure
-        else
-            git clone -n https://gitlab.aei.uni-hannover.de/einsteinathome/boinc.git boinc >> $LOGFILE 2>&1 || failure
-        fi
+        cp -R $ROOT/3rdparty-git/boinc $ROOT/3rdparty/boinc || failure
         cd $ROOT/3rdparty/boinc || failure
         git checkout -f $1 >> $LOGFILE  2>&1 || failure
     fi
