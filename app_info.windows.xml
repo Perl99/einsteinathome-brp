@@ -1,6 +1,11 @@
 <app_info>
 
-<!--    BRP4G enhanced-->
+    <!--    common files -->
+    <file_info>
+        <name>EULA.txt</name>
+    </file_info>
+
+    <!--    BRP4G enhanced-->
     <file_info>
         <name>einsteinbinary_BRP4G_0.11_windows_x86_64__BRP4X64.exe</name>
         <executable/>
@@ -14,6 +19,13 @@
 
     <file_info>
         <name>wisdom_generator.exe</name>
+        <executable/>
+    </file_info>
+
+    <!-- BRP4G graphical app -->
+    <file_info>
+        <name>einsteinbinary_BRP4G_61_graphics_windows_intelx86_64.exe</name>
+        <executable/>
     </file_info>
 
     <app>
@@ -45,23 +57,34 @@
         <dont_throttle/>
     </app_version>
 
-    <!--    BRP4G graphical app-->
+    <!-- other official apps -->
+    <!-- BPR7 -->
     <file_info>
-        <name>einsteinbinary_BRP4G_61_graphics_windows_intelx86_64.exe</name>
-        <url>http://einstein2.aei.uni-hannover.de/EinsteinAtHome/download/einsteinbinary_BRP4G_61_graphics_windows_intelx86_64.exe</url>
-        <url>http://einstein-dl.syr.edu/download/einsteinbinary_BRP4G_61_graphics_windows_intelx86_64.exe</url>
-        <file_signature>
-            0e317be45d2338cbee9d8d5359460eed2aada04e2f06c45709e577be24535d5f
-            9f2635591bffaf7786a42146d4f6315d80396a3e1669016cfe6bf6f0d128a284
-            298b5fd00d7454621b23ce79033348111f3ac47d5a4c610edd6680a60cf89497
-            99cfb72c7e3647a84e5f7be8e7bca05c70675e9581891e58ca9db69c91bd46ce
-            .
-        </file_signature>
-        <nbytes>31403213</nbytes>
+        <name>einsteinbinary_BRP7_0.12_windows_x86_64__BRP7-cuda55.exe</name>
+        <executable/>
     </file_info>
 
-<!--    other official apps-->
-<!--    BPR7-->
+    <file_info>
+        <name>cudart_xp64_55_22.dll</name>
+    </file_info>
+
+    <file_info>
+        <name>cufft_xp64_55_22.dll</name>
+    </file_info>
+
+    <file_info>
+        <name>einsteinbinary_BRP7_0.12_windows_x86_64__BRP7-cuda55.exe-db.dev</name>
+    </file_info>
+
+    <file_info>
+        <name>einsteinbinary_BRP7_0.12_windows_x86_64__BRP7-cuda55.exe-dbhs.dev</name>
+    </file_info>
+
+    <file_info>
+        <name>einsteinbinary_BRP7_0.12_windows_x86_64__BRP7-opencl-ati.exe</name>
+        <executable/>
+    </file_info>
+
     <app>
         <name>einsteinbinary_BRP7</name>
         <user_friendly_name>Binary Radio Pulsar Search (MeerKAT)</user_friendly_name>
@@ -132,82 +155,16 @@
         </file_ref>
     </app_version>
 
+    <!-- FGRP5 -->
     <file_info>
-        <name>einsteinbinary_BRP7_0.12_windows_x86_64__BRP7-cuda55.exe</name>
-        <url>http://einstein2.aei.uni-hannover.de/EinsteinAtHome/download/einsteinbinary_BRP7_0.12_windows_x86_64__BRP7-cuda55.exe</url>
-        <url>http://einstein-dl.syr.edu/download/einsteinbinary_BRP7_0.12_windows_x86_64__BRP7-cuda55.exe</url>
+        <name>hsgamma_FGRP5_1.08_windows_intelx86__FGRPSSE.exe</name>
         <executable/>
-        <file_signature>
-            3be6a19d6addd28d7b2c9abf5a0167ca024db8f68513bb053ea7d88c5fd35136
-            67b9a841eb2cc93f03040cfd49ca674ad78b182d29003dfa9363cbcf3b181e03
-            63c510a3962b6641e4b6dc386ec17eb16a22fc08dc840318607e64f1db488e2a
-            6e5297ce9d5d0d74c51ab91f28d9498510b4ada5cb4e2156aac7de17b1b63099
-            .
-        </file_signature>
-        <nbytes>19335796</nbytes>
     </file_info>
 
-    <file_info>
-        <name>cudart_xp64_55_22.dll</name>
-        <url>http://einstein2.aei.uni-hannover.de/EinsteinAtHome/download/cudart_xp64_55_22.dll</url>
-        <url>http://einstein-dl.syr.edu/download/cudart_xp64_55_22.dll</url>
-        <executable/>
-        <file_signature>
-            817b46c7072a19eb5cb8869dd3492217c84a4a502b961f0be7cb42adbebd6d22
-            bbfc767073ce4255b7974af6858af701aef4d0c625edbf5c746a8101a32eefba
-            b4537467d17110445a84af0e6f948ef461fb2b30dd11ead210620530c8de3297
-            7b2ae6f7810b2b14abeb6348a34df5d91317e278e9939ac13dd32c605145ca12
-            .
-        </file_signature>
-        <nbytes>298272</nbytes>
-    </file_info>
-
-    <file_info>
-        <name>cufft_xp64_55_22.dll</name>
-        <url>http://einstein2.aei.uni-hannover.de/EinsteinAtHome/download/cufft_xp64_55_22.dll</url>
-        <url>http://einstein-dl.syr.edu/download/cufft_xp64_55_22.dll</url>
-        <executable/>
-        <file_signature>
-            1e112c76e57aab23b84a99fe6da72cecfaf694638483fa626d3ad133376f143b
-            3a4fb9686ee54eefc5de7f415cb18a6a395fb7e409cfe9e58a701adf80b155d2
-            7d3b2620ca33607b8ef28b3216eca29c41433497e5c4778519f4828506386eaa
-            1dd35f6c7c1d15088b2f03eb8a24bb3a82dfa5e73a6b728803db2dcea3174472
-            .
-        </file_signature>
-        <nbytes>74730784</nbytes>
-    </file_info>
-
-    <file_info>
-        <name>einsteinbinary_BRP7_0.12_windows_x86_64__BRP7-cuda55.exe-db.dev</name>
-        <url>http://einstein2.aei.uni-hannover.de/EinsteinAtHome/download/einsteinbinary_BRP7_0.12_windows_x86_64__BRP7-cuda55.exe-db.dev</url>
-        <url>http://einstein-dl.syr.edu/download/einsteinbinary_BRP7_0.12_windows_x86_64__BRP7-cuda55.exe-db.dev</url>
-        <file_signature>
-            410b3d18b0669951f0a29275f5db620cf013f655d0c23b4de66f73c35b2f7d90
-            5ccfdb238473820e64dca7119faa1ef1b34ee8504f87e2c799d4a570250bb7ac
-            532a851be1cdee06b8887c2c84af3e97f62c9162d842a054a203a764e09c021d
-            9c58661d26fccae05b551639cff509dac12c287ec051fd2b32297296b108c47f
-            .
-        </file_signature>
-        <nbytes>12840</nbytes>
-    </file_info>
-
-    <file_info>
-        <name>einsteinbinary_BRP7_0.12_windows_x86_64__BRP7-cuda55.exe-dbhs.dev</name>
-        <url>http://einstein2.aei.uni-hannover.de/EinsteinAtHome/download/einsteinbinary_BRP7_0.12_windows_x86_64__BRP7-cuda55.exe-dbhs.dev</url>
-        <url>http://einstein-dl.syr.edu/download/einsteinbinary_BRP7_0.12_windows_x86_64__BRP7-cuda55.exe-dbhs.dev</url>
-        <file_signature>
-            135fb29878c210696d2ebdf7b2add80031cb841a3f25029ae782581987cc9116
-            e28c28011991ec5895ca075570745f3113b587f6e6598da48cd820557d16a3ff
-            3245437bd6834db6c960253f25a9d732f3b2c7f6c45b2c1883c970d9a7f40af3
-            07312b6971b1be175b13bf49fa85e9cca1bf54d4ca7056a7c279aa97debebeda
-            .
-        </file_signature>
-        <nbytes>23426</nbytes>
-    </file_info>
-
-    <file_info>
-        <name>einsteinbinary_BRP7_0.12_windows_x86_64__BRP7-opencl-ati.exe</name>
-    </file_info>
+    <app>
+        <name>hsgamma_FGRP5</name>
+        <user_friendly_name>Fermi Gamma-Ray Pulsar Search 5</user_friendly_name>
+    </app>
 
     <app_version>
         <app_name>hsgamma_FGRP5</app_name>
@@ -224,9 +181,21 @@
         </file_ref>
     </app_version>
 
+    <!-- O3AS -->
     <file_info>
-        <name>hsgamma_FGRP5_1.08_windows_intelx86__FGRPSSE.exe</name>
+        <name>einstein_O3AS_1.04_windows_x86_64__GW-opencl-ati.exe</name>
+        <executable/>
     </file_info>
+
+    <file_info>
+        <name>einstein_O3AS_1.06_windows_x86_64__GW-opencl-nvidia.exe</name>
+        <executable/>
+    </file_info>
+
+    <app>
+        <name>einstein_O3AS</name>
+        <user_friendly_name>O3 All-Sky Search</user_friendly_name>
+    </app>
 
     <app_version>
         <app_name>einstein_O3AS</app_name>
@@ -249,10 +218,6 @@
         </file_ref>
     </app_version>
 
-    <file_info>
-        <name>einstein_O3AS_1.04_windows_x86_64__GW-opencl-ati.exe</name>
-    </file_info>
-
     <app_version>
         <app_name>einstein_O3AS</app_name>
         <version_num>106</version_num>
@@ -273,35 +238,5 @@
             <main_program/>
         </file_ref>
     </app_version>
-
-    <file_info>
-        <name>einstein_O3AS_1.06_windows_x86_64__GW-opencl-nvidia.exe</name>
-    </file_info>
-
-<!--    common files -->
-    <file_info>
-        <name>EULA.txt</name>
-        <url>http://einstein2.aei.uni-hannover.de/EinsteinAtHome/download/EULA.txt</url>
-        <url>http://einstein-dl.syr.edu/download/EULA.txt</url>
-        <file_signature>
-            4830fb04b51a4bb63a3cd56bce40012c252b58dc6d00945e2fb4c9a3fb83f3ee
-            2ebdd20cf391fbe8c07c49ecac351e5193d35c0c398958572d14c0dc2b87202c
-            d004823f8d1ea5e2fa0707cd6aa9683792a7c3045dedc60e4b3e19d91a057b28
-            1a9422b79ce63c41882eddc1a61118728e95ee922014e617bfb6629109d1f0f3
-            .
-        </file_signature>
-        <nbytes>15370</nbytes>
-    </file_info>
-
-    <file_info>
-        <sticky/>
-        <no_delete/>
-        <name>stochastic_fullG.bank</name>
-        <url>http://einstein6.aei.uni-hannover.de/EinsteinAtHome/download/251/stochastic_fullG.bank</url>
-        <md5_cksum>ec76f47a1aef9674beb4768ce416f5c3</md5_cksum>
-        <nbytes>313687</nbytes>
-    </file_info>
-
-
 
 </app_info>
