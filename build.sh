@@ -23,6 +23,7 @@
 
 ### globals ###############################################################
 
+#export MAKEFLAGS="-j$(nproc)"
 ROOT=`pwd`
 PATH_ORG="$PATH"
 PATH_MINGW="$PATH"
@@ -41,7 +42,7 @@ BINUTILS_VERSION=2.22
 GSL_VERSION=1.12
 FFTW_VERSION=3.3.2
 LIBXML_VERSION=2.6.32
-ZLIB_VERSION=1.2.8
+ZLIB_VERSION=1.3
 OPENSSL_VERSION=1.0.1l
 
 # git tags
