@@ -65,7 +65,7 @@ release: CXXFLAGS += -DNDEBUG -DLOGLEVEL=info -ggdb3 -rdynamic -O3 -Wall
 
 # file based targets
 $(TARGET): $(DEPS) $(EINSTEIN_RADIO_SRC)/erp_boinc_wrapper.cpp $(OBJS) wisdom_generator
-	$(CXX) -g $(CXXFLAGS) -DCXX_FLAGS="\"${CXXFLAGS}\" $(LDFLAGS) $(EINSTEIN_RADIO_SRC)/erp_boinc_wrapper.cpp -o $(TARGET) $(OBJS) $(LIBS)
+	$(CXX) -g $(CXXFLAGS) -DCXX_FLAGS="\"${CXXFLAGS}\"" $(LDFLAGS) $(EINSTEIN_RADIO_SRC)/erp_boinc_wrapper.cpp -o $(TARGET) $(OBJS) $(LIBS)
 
 demod_binary.o: $(DEPS) $(EINSTEIN_RADIO_SRC)/demod_binary.c $(EINSTEIN_RADIO_SRC)/demod_binary.h
 	$(CXX) -g $(CXXFLAGS) -c $(EINSTEIN_RADIO_SRC)/demod_binary.c
