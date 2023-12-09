@@ -68,7 +68,7 @@ $(TARGET): $(DEPS) $(EINSTEIN_RADIO_SRC)/erp_boinc_wrapper.cpp $(OBJS) wisdom_ge
 	$(CXX) -g $(CXXFLAGS) -DCXX_FLAGS="\"${CXXFLAGS}\"" $(LDFLAGS) $(EINSTEIN_RADIO_SRC)/erp_boinc_wrapper.cpp -o $(TARGET) $(OBJS) $(LIBS)
 
 demod_binary.o: $(DEPS) $(EINSTEIN_RADIO_SRC)/demod_binary.c $(EINSTEIN_RADIO_SRC)/demod_binary.h
-	$(CXX) -g $(CXXFLAGS) -c $(EINSTEIN_RADIO_SRC)/demod_binary.c
+	$(CXX) -g $(CXXFLAGS) -DCXX_FLAGS="\"${CXXFLAGS}\"" -c $(EINSTEIN_RADIO_SRC)/demod_binary.c
 
 demod_binary_resamp_cpu.o: $(DEPS) $(EINSTEIN_RADIO_SRC)/demod_binary_resamp_cpu.c $(EINSTEIN_RADIO_SRC)/demod_binary_resamp_cpu.h
 	$(CXX) -g $(CXXFLAGS) -c $(EINSTEIN_RADIO_SRC)/demod_binary_resamp_cpu.c
