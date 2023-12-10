@@ -26,7 +26,7 @@
 #include "demod_binary_resamp_cpu.h"
 
 #include <stdlib.h>
-#include <gsl/gsl_math.h>
+#include <math.h>
 #include <fftw3.h>
 #include "demod_binary.h"
 #include "erp_utilities.h"
