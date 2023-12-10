@@ -57,25 +57,15 @@ TARGET = $(EINSTEINBINARY_TARGET)
 # primary role based tagets
 default: release
 debug: $(TARGET)
-profile: clean $(TARGET)
 release: clean $(TARGET)
 
 # target specific options
 debug: CXXFLAGS += -DLOGLEVEL=debug -pg -ggdb3 -rdynamic -O0 -Wall
-profile: CXXFLAGS += -DNDEBUG -DLOGLEVEL=info -ggdb3 -rdynamic -O3 -Wall -fprofile-generate
-release: CXXFLAGS += -DNDEBUG -DLOGLEVEL=info -ggdb3 -rdynamic -O3 -Wall -fprofile-use
+release: CXXFLAGS += -DNDEBUG -DLOGLEVEL=info -ggdb3 -rdynamic -O3 -Wall
 
 # file based targets
-profile:
-	@echo "Removing previous profiling data..."
-	rm -f *_profile.*
-	rm -f *.gcda
-	@echo "Gathering profiling data (this takes roughly one minute)..."
-	./$(TARGET) -t $(EINSTEIN_RADIO_SRC)/../test/templates_400Hz_2_short.bank -l $(EINSTEIN_RADIO_SRC)/data/zaplist_232.txt -A 0.04 -P 3.0 -W -z -i $(EINSTEIN_RADIO_SRC)/../test/J1907+0740_dm_482.binary -c status_profile.cpt -o results_profile.cand
-	@echo "Finished gathering profiling data..."
-
-$(TARGET): $(DEPS) $(EINSTEIN_RADIO_SRC)/erp_boinc_wrapper.cpp $(OBJS)
-	$(CXX) -g $(CXXFLAGS) $(LDFLAGS) $(EINSTEIN_RADIO_SRC)/erp_boinc_wrapper.cpp -o $(TARGET) $(OBJS) $(LIBS)
+$(TARGET): $(DEPS) $(EINSTEIN_RADIO_SRC)/erp_boinc_wrapper.cpp $(OBJS) wisdom_generator
+	$(CXX) -g $(CXXFLAGS) -DCXX_FLAGS="\"${CXXFLAGS}\"" $(LDFLAGS) $(EINSTEIN_RADIO_SRC)/erp_boinc_wrapper.cpp -o $(TARGET) $(OBJS) $(LIBS)
 
 demod_binary.o: $(DEPS) $(EINSTEIN_RADIO_SRC)/demod_binary.c $(EINSTEIN_RADIO_SRC)/demod_binary.h
 	$(CXX) -g $(CXXFLAGS) -c $(EINSTEIN_RADIO_SRC)/demod_binary.c
@@ -110,10 +100,14 @@ erp_utilities.o: $(DEPS) $(EINSTEIN_RADIO_SRC)/erp_utilities.cpp $(EINSTEIN_RADI
 erp_execinfo_plus.o: $(DEPS) $(EINSTEIN_RADIO_SRC)/erp_execinfo_plus.c $(EINSTEIN_RADIO_SRC)/erp_execinfo_plus.h
 	$(CXX) -g $(CXXFLAGS) -c $(EINSTEIN_RADIO_SRC)/erp_execinfo_plus.c
 
+wisdom_generator: $(DEPS) $(EINSTEIN_RADIO_SRC)/wisdom_generator.cpp
+	$(CXX) -g $(CXXFLAGS) -DCXX_FLAGS="\"${CXXFLAGS}\"" $(LDFLAGS) $(EINSTEIN_RADIO_SRC)/wisdom_generator.cpp -o wisdom_generator $(LIBS)
+
 install:
 	mkdir -p $(EINSTEIN_RADIO_INSTALL)/../dist
-	cp $(TARGET) $(EINSTEIN_RADIO_INSTALL)/../dist
+	cp $(TARGET) wisdom_generator $(EINSTEIN_RADIO_INSTALL)/../dist
+	chmod a+x $(EINSTEIN_RADIO_INSTALL)/../dist wisdom_generator
 
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -f $(OBJS) $(TARGET) wisdom_generator
 

@@ -1,0 +1,242 @@
+<app_info>
+
+    <!--    common files -->
+    <file_info>
+        <name>EULA.txt</name>
+    </file_info>
+
+    <!--    BRP4G enhanced-->
+    <file_info>
+        <name>einsteinbinary_BRP4G_0.11_windows_x86_64__BRP4X64.exe</name>
+        <executable/>
+    </file_info>
+
+    <file_info>
+        <name>BRP4.wisdom</name>
+        <sticky/>
+        <no_delete/>
+    </file_info>
+
+    <file_info>
+        <name>wisdom_generator.exe</name>
+        <executable/>
+    </file_info>
+
+    <!-- BRP4G graphical app -->
+    <file_info>
+        <name>einsteinbinary_BRP4G_61_graphics_windows_intelx86_64.exe</name>
+        <executable/>
+    </file_info>
+
+    <app>
+        <name>einsteinbinary_BRP4G</name>
+        <user_friendly_name>Binary Radio Pulsar Search (Arecibo,GBT,long)</user_friendly_name>
+        <non_cpu_intensive>0</non_cpu_intensive>
+    </app>
+
+    <app_version>
+        <app_name>einsteinbinary_BRP4G</app_name>
+        <platform>windows_x86_64</platform>
+        <version_num>11</version_num>
+        <api_version>7.1.0</api_version>
+        <plan_class>BRP4X64</plan_class>
+        <file_ref>
+            <file_name>einsteinbinary_BRP4G_0.11_windows_x86_64__BRP4X64.exe</file_name>
+            <main_program/>
+        </file_ref>
+        <file_ref>
+            <file_name>BRP4.wisdom</file_name>
+        </file_ref>
+        <file_ref>
+            <file_name>wisdom_generator.exe</file_name>
+        </file_ref>
+        <file_ref>
+            <file_name>einsteinbinary_BRP4G_61_graphics_windows_intelx86_64.exe</file_name>
+            <open_name>graphics_app</open_name>
+        </file_ref>
+        <dont_throttle/>
+    </app_version>
+
+    <!-- other official apps -->
+    <!-- BPR7 -->
+    <file_info>
+        <name>einsteinbinary_BRP7_0.12_windows_x86_64__BRP7-cuda55.exe</name>
+        <executable/>
+    </file_info>
+
+    <file_info>
+        <name>cudart_xp64_55_22.dll</name>
+    </file_info>
+
+    <file_info>
+        <name>cufft_xp64_55_22.dll</name>
+    </file_info>
+
+    <file_info>
+        <name>einsteinbinary_BRP7_0.12_windows_x86_64__BRP7-cuda55.exe-db.dev</name>
+    </file_info>
+
+    <file_info>
+        <name>einsteinbinary_BRP7_0.12_windows_x86_64__BRP7-cuda55.exe-dbhs.dev</name>
+    </file_info>
+
+    <file_info>
+        <name>einsteinbinary_BRP7_0.12_windows_x86_64__BRP7-opencl-ati.exe</name>
+        <executable/>
+    </file_info>
+
+    <app>
+        <name>einsteinbinary_BRP7</name>
+        <user_friendly_name>Binary Radio Pulsar Search (MeerKAT)</user_friendly_name>
+    </app>
+
+    <app_version>
+        <app_name>einsteinbinary_BRP7</app_name>
+        <version_num>12</version_num>
+        <api_version>7.17.0</api_version>
+        <file_ref>
+            <file_name>einsteinbinary_BRP7_0.12_windows_x86_64__BRP7-cuda55.exe</file_name>
+            <main_program/>
+        </file_ref>
+        <file_ref>
+            <file_name>cudart_xp64_55_22.dll</file_name>
+            <open_name>cudart64_55.dll</open_name>
+            <copy_file/>
+        </file_ref>
+        <file_ref>
+            <file_name>cufft_xp64_55_22.dll</file_name>
+            <open_name>cufft64_55.dll</open_name>
+            <copy_file/>
+        </file_ref>
+        <file_ref>
+            <file_name>einsteinbinary_BRP7_0.12_windows_x86_64__BRP7-cuda55.exe-db.dev</file_name>
+            <open_name>db.dev</open_name>
+            <copy_file/>
+        </file_ref>
+        <file_ref>
+            <file_name>einsteinbinary_BRP7_0.12_windows_x86_64__BRP7-cuda55.exe-dbhs.dev</file_name>
+            <open_name>dbhs.dev</open_name>
+            <copy_file/>
+        </file_ref>
+        <file_ref>
+            <file_name>EULA.txt</file_name>
+            <open_name>EULA.txt</open_name>
+        </file_ref>
+        <platform>windows_x86_64</platform>
+        <plan_class>BRP7-cuda55</plan_class>
+        <avg_ncpus>0.200000</avg_ncpus>
+        <max_ncpus>1.000000</max_ncpus>
+        <flops>91921145567.561142</flops>
+        <coproc>
+            <type>CUDA</type>
+            <count>1.000000</count>
+        </coproc>
+        <gpu_ram>734003200.000000</gpu_ram>
+    </app_version>
+
+    <app_version>
+        <app_name>einsteinbinary_BRP7</app_name>
+        <version_num>12</version_num>
+        <platform>windows_x86_64</platform>
+        <avg_ncpus>0.500000</avg_ncpus>
+        <flops>110305374681.073364</flops>
+        <plan_class>BRP7-opencl-ati</plan_class>
+        <api_version>7.17.0</api_version>
+        <coproc>
+            <type>ATI</type>
+            <count>1.000000</count>
+        </coproc>
+        <gpu_ram>734003200.000000</gpu_ram>
+        <dont_throttle/>
+
+        <file_ref>
+            <file_name>einsteinbinary_BRP7_0.12_windows_x86_64__BRP7-opencl-ati.exe</file_name>
+            <main_program/>
+        </file_ref>
+    </app_version>
+
+    <!-- FGRP5 -->
+    <file_info>
+        <name>hsgamma_FGRP5_1.08_windows_intelx86__FGRPSSE.exe</name>
+        <executable/>
+    </file_info>
+
+    <app>
+        <name>hsgamma_FGRP5</name>
+        <user_friendly_name>Fermi Gamma-Ray Pulsar Search 5</user_friendly_name>
+    </app>
+
+    <app_version>
+        <app_name>hsgamma_FGRP5</app_name>
+        <version_num>108</version_num>
+        <platform>windows_intelx86</platform>
+        <avg_ncpus>1.000000</avg_ncpus>
+        <flops>6904078135.731756</flops>
+        <plan_class>FGRPSSE</plan_class>
+        <api_version>7.3.0</api_version>
+
+        <file_ref>
+            <file_name>hsgamma_FGRP5_1.08_windows_intelx86__FGRPSSE.exe</file_name>
+            <main_program/>
+        </file_ref>
+    </app_version>
+
+    <!-- O3AS -->
+    <file_info>
+        <name>einstein_O3AS_1.04_windows_x86_64__GW-opencl-ati.exe</name>
+        <executable/>
+    </file_info>
+
+    <file_info>
+        <name>einstein_O3AS_1.06_windows_x86_64__GW-opencl-nvidia.exe</name>
+        <executable/>
+    </file_info>
+
+    <app>
+        <name>einstein_O3AS</name>
+        <user_friendly_name>O3 All-Sky Search</user_friendly_name>
+    </app>
+
+    <app_version>
+        <app_name>einstein_O3AS</app_name>
+        <version_num>104</version_num>
+        <platform>windows_x86_64</platform>
+        <avg_ncpus>0.900000</avg_ncpus>
+        <flops>135277607040.615540</flops>
+        <plan_class>GW-opencl-ati</plan_class>
+        <api_version>7.3.0</api_version>
+        <coproc>
+            <type>ATI</type>
+            <count>0.500000</count>
+        </coproc>
+        <gpu_ram>3984588800.000000</gpu_ram>
+        <dont_throttle/>
+
+        <file_ref>
+            <file_name>einstein_O3AS_1.04_windows_x86_64__GW-opencl-ati.exe</file_name>
+            <main_program/>
+        </file_ref>
+    </app_version>
+
+    <app_version>
+        <app_name>einstein_O3AS</app_name>
+        <version_num>106</version_num>
+        <platform>windows_x86_64</platform>
+        <avg_ncpus>0.900000</avg_ncpus>
+        <flops>135277607040.615540</flops>
+        <plan_class>GW-opencl-nvidia</plan_class>
+        <api_version>7.3.0</api_version>
+        <coproc>
+            <type>NVIDIA</type>
+            <count>0.500000</count>
+        </coproc>
+        <gpu_ram>3984588800.000000</gpu_ram>
+        <dont_throttle/>
+
+        <file_ref>
+            <file_name>einstein_O3AS_1.06_windows_x86_64__GW-opencl-nvidia.exe</file_name>
+            <main_program/>
+        </file_ref>
+    </app_version>
+
+</app_info>

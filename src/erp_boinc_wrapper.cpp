@@ -20,7 +20,7 @@
 
 /* BOINC includes - need to be before the #defines in boinc_wrapper.h */
 #include "boinc_api.h"
-#include "diagnostics.h"
+#include "boinc/diagnostics.h"
 #include "svn_version.h"
 
 /* probably already included by previous headers, but make sure they are included */
@@ -489,7 +489,8 @@ int main(int argc, char**argv)
     int result = 0;
 
     logMessage(info, true, "Application startup - thank you for supporting Einstein@Home!\n");
-    logMessage(debug, true, "Setting up diagnotics and exception handling...\n");
+    logMessage(info, true, "Compiled with flags: %s \n", CXX_FLAGS);
+    logMessage(debug, true, "Setting up diagnostics and exception handling...\n");
 
     /* init BOINC diagnostics */
     boinc_init_diagnostics(     BOINC_DIAG_DUMPCALLSTACKENABLED |

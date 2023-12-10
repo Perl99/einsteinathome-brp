@@ -1,0 +1,3 @@
+[submodule "3rdparty-git/boinc"]
+	path = 3rdparty-git/boinc
+	url = https://gitlab.aei.uni-hannover.de/einsteinathome/boinc.git
