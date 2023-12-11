@@ -51,9 +51,6 @@ extern "C" {
     extern void endian_swap(uint8_t* pdata, const size_t dsize, const size_t nelements);
     extern void logMessage(const ERP_LOGLEVEL logLevel, const bool showLevel, const char* msg, ...);
 
-    extern void sincosLUTInitialize(float **sinLUT, float **cosLUT);
-    extern bool sincosLUTLookup(float x, float *sinX, float *cosX);
-
     extern int resolveFilename(const char *logical, char *physical, int maxLength);
 
     extern int dumpFloatBufferToTextFile(const float *buffer, const size_t size, const char *filename);

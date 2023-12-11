@@ -35,6 +35,9 @@
 // TODO: do we wanna keep those global (or use proper C++, or pass them around)?
 float *del_t = NULL;
 
+float sinSamples[] = {0.000000f, 0.098017f, 0.195090f, 0.290285f, 0.382683f, 0.471397f, 0.555570f, 0.634393f, 0.707107f, 0.773010f, 0.831470f, 0.881921f, 0.923880f, 0.956940f, 0.980785f, 0.995185f, 1.000000f, 0.995185f, 0.980785f, 0.956940f, 0.923880f, 0.881921f, 0.831470f, 0.773010f, 0.707107f, 0.634393f, 0.555570f, 0.471397f, 0.382683f, 0.290285f, 0.195091f, 0.098017f, 0.000000f, -0.098017f, -0.195090f, -0.290284f, -0.382683f, -0.471397f, -0.555570f, -0.634393f, -0.707107f, -0.773010f, -0.831469f, -0.881921f, -0.923880f, -0.956940f, -0.980785f, -0.995185f, -1.000000f, -0.995185f, -0.980785f, -0.956940f, -0.923880f, -0.881921f, -0.831470f, -0.773011f, -0.707107f, -0.634394f, -0.555570f, -0.471397f, -0.382684f, -0.290285f, -0.195091f, -0.098017f, -0.000000f};
+float cosSamples[] = {1.000000f, 0.995185f, 0.980785f, 0.956940f, 0.923880f, 0.881921f, 0.831470f, 0.773010f, 0.707107f, 0.634393f, 0.555570f, 0.471397f, 0.382683f, 0.290285f, 0.195090f, 0.098017f, 0.000000f, -0.098017f, -0.195090f, -0.290285f, -0.382683f, -0.471397f, -0.555570f, -0.634393f, -0.707107f, -0.773010f, -0.831470f, -0.881921f, -0.923880f, -0.956940f, -0.980785f, -0.995185f, -1.000000f, -0.995185f, -0.980785f, -0.956940f, -0.923880f, -0.881921f, -0.831470f, -0.773011f, -0.707107f, -0.634393f, -0.555570f, -0.471397f, -0.382684f, -0.290285f, -0.195090f, -0.098017f, 0.000000f, 0.098017f, 0.195090f, 0.290285f, 0.382683f, 0.471397f, 0.555570f, 0.634393f, 0.707107f, 0.773010f, 0.831470f, 0.881921f, 0.923879f, 0.956940f, 0.980785f, 0.995185f, 1.000000f};
+
 
 int set_up_resampling(DIfloatPtr input_dip, DIfloatPtr *output_dip, const RESAMP_PARAMS *const params, float *sinLUTsamples, 
 float *cosLUTsamples)
@@ -76,6 +79,71 @@ float *cosLUTsamples)
     return 0;
 }
 
+void sincosLUTInitialize(float **sinLUT, float **cosLUT)
+{
+    // old unsused code, we're already initialized (hence the fixed "true")
+    static bool initialized = true;
+
+    if(!initialized) {
+        unsigned int i;
+        for (i=0; i <= ERP_SINCOS_LUT_RES; ++i) {
+            sinSamples[i] = sin(ERP_TWO_PI * i * ERP_SINCOS_LUT_RES_F_INV);
+            cosSamples[i] = cos(ERP_TWO_PI * i * ERP_SINCOS_LUT_RES_F_INV);
+        }
+        initialized = true;
+
+        /*
+        // print fixed LUT values to used for sinSamples/cosSamples
+        for (i=0; i <= ERP_SINCOS_LUT_RES; ++i) {
+            printf("%ff, ", sinSamples[i]);
+        }
+        printf("\n");
+        for (i=0; i <= ERP_SINCOS_LUT_RES; ++i) {
+            printf("%ff, ", cosSamples[i]);
+            }
+        */
+    }
+
+    *sinLUT = sinSamples;
+    *cosLUT = cosSamples;
+}
+
+static bool sincosLUTLookup(float x, float *sinX)
+{
+    float xt;
+    int i0;
+    float d, d2;
+    float ts, tc;
+    float dummy;
+
+    xt = modff(ERP_TWO_PI_INV * x, &dummy); // xt in (-1, 1)
+    if ( xt < 0.0f ) {
+        xt += 1.0f;         // xt in [0, 1 )
+    }
+
+#ifndef NDEBUG
+    // sanity check
+    if ( xt < 0.0f || xt > 1.0f ) {
+        logMessage(error, true, "sincosLUTLookup failed: xt = %f not in [0,1)\n", xt);
+        return false;
+    }
+#endif
+
+    // determine LUT index
+    i0 = (int) (xt * ERP_SINCOS_LUT_RES_F + 0.5f);
+    d = d2 = ERP_TWO_PI * (xt - ERP_SINCOS_LUT_RES_F_INV * i0);
+    d2 *= 0.5f * d;
+
+    // fetch sin/cos samples
+    ts = sinSamples[i0];
+    tc = cosSamples[i0];
+
+    //use Taylor-expansions for sin around samples
+    (*sinX) = ts + d * tc - d2 * ts;
+
+    return true;
+}
+
 
 int run_resampling(DIfloatPtr input_dip, DIfloatPtr output_dip, const RESAMP_PARAMS *const params)
 {
@@ -92,10 +160,9 @@ int run_resampling(DIfloatPtr input_dip, DIfloatPtr output_dip, const RESAMP_PAR
     {
         float t = i_f * params->dt;
         float sinValue = 0.0f;
-        float dummy = 0.0f;
 
         // lookup sin(Omega * t + Psi0)
-        sincosLUTLookup(params->Omega * t + params->Psi0, &sinValue, &dummy);
+        sincosLUTLookup(params->Omega * t + params->Psi0, &sinValue);
 
         // compute time offsets as multiples of tsampm subtract zero time offset
         del_t[i] = params->tau * sinValue * params->step_inv - params->S0;

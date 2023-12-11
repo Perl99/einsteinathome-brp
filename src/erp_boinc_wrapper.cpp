@@ -489,7 +489,6 @@ int main(int argc, char**argv)
     int result = 0;
 
     logMessage(info, true, "Application startup - thank you for supporting Einstein@Home!\n");
-    logMessage(info, true, "Compiled with flags: %s \n", CXX_FLAGS);
     logMessage(debug, true, "Setting up diagnostics and exception handling...\n");
 
     /* init BOINC diagnostics */

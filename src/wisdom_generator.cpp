@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
         printf("Using first argument as FFT size.\n");
         fft_size = atoll(argv[1]);
     } else {
-        printf("Using default FFT size: %lld.\n", fft_size);
+        printf("Using default FFT size: %llu.\n", fft_size);
     }
     
     unsigned long long fft_input_size = (fft_size - 1) * 2;
