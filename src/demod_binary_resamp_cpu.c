@@ -187,11 +187,15 @@ int run_resampling(DIfloatPtr input_dip, DIfloatPtr output_dip, const RESAMP_PAR
 	mean += output[i];
       }
 
+#ifndef NDEBUG
     logMessage(debug, true,"Time series sum: %f\n",mean);
+#endif
 
     mean /= i_f;
 
+#ifndef NDEBUG
     logMessage(debug, true, "Actual time series mean is: %e (length: %i)\n", mean, n_steps);
+#endif
 
     // fill up with mean if necessary
     for( ; i < params->nsamples; i++)

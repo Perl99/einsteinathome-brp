@@ -42,6 +42,23 @@
 fftwf_complex *t_series_resamp_fft = NULL; 
 fftwf_plan fft_plan;
 
+void load_fftw_wisdom() {
+#ifdef EMBEDDED_WISDOM_HEADER
+    if (fftwf_import_wisdom_from_string(EMBEDDED_WISDOM)) {
+        logMessage(info, true, "Using embedded FFTW wisdom.\n");
+    }
+#else
+    char wisdomPath[512];
+    resolveFilename("BRP4.wisdom", wisdomPath, sizeof(wisdomPath));
+    if (fftwf_import_wisdom_from_filename(wisdomPath)) {
+        logMessage(info, true, "Using FFTW wisdom from file %s.\n", wisdomPath);
+    } else if (fftwf_import_system_wisdom()) {
+        logMessage(info, true, "Using system-wide FFTW wisdom.\n");
+    } else {
+        logMessage(info, true, "No applicable FFTW wisdom found.\n");
+    }
+#endif
+}
 
 int set_up_fft(DIfloatPtr input, DIfloatPtr *output, uint32_t nsamples, unsigned int fft_size)
 {
@@ -59,15 +76,9 @@ int set_up_fft(DIfloatPtr input, DIfloatPtr *output, uint32_t nsamples, unsigned
 #endif
 
     // create fft plan
-    // if configured , load pre-canned wisom from string
-    /// else load system wide wisdom if present
-
-#ifdef EMBEDDED_WISDOM_HEADER
-    fftwf_import_wisdom_from_string(EMBEDDED_WISDOM);
-#else
-    fftwf_import_system_wisdom();
-#endif
+    load_fftw_wisdom();
     fft_plan = fftwf_plan_dft_r2c_1d(nsamples, input.host_ptr, t_series_resamp_fft, FFTW_ESTIMATE);
+    fftwf_print_plan(fft_plan);
 
 #ifdef  BRP_FFT_INPLACE 
    output->host_ptr =  input.host_ptr;
@@ -118,7 +129,7 @@ int tear_down_fft(DIfloatPtr output)
 #ifndef BRP_FFT_INPLACE
     free(output.host_ptr);
     fftwf_free(t_series_resamp_fft);
-#endif;
+#endif
     fftwf_destroy_plan(fft_plan);
 
     return 0;
