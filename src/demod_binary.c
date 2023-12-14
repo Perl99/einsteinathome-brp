@@ -214,9 +214,6 @@ int MAIN (int argc, char *argv[])
   uvar.fA = 0.04;
   uvar.debug = 0;
 
-    logMessage(info, true, "Compiled with flags: %s \n", CXX_FLAGS);
-    logMessage(info, true, "Changes: 1. sanity check in sincosLUTLookup disabled in release mode, moved to resamp_cpu, 2. remove calculating cosX because it is not used\n");
-
   // parse command line arguments
   i = 1;
   while (i < argc)
@@ -449,6 +446,8 @@ int MAIN (int argc, char *argv[])
 
 
   logMessage(info, true, "Starting data processing...\n");
+    logMessage(info, true, "Compiled with flags: %s \n", CXX_FLAGS);
+    logMessage(info, true, "Changes: 1. sanity check in sincosLUTLookup disabled in release mode, moved to resamp_cpu, 2. remove calculating cosX because it is not used, 3. use SSE up to SSE4 in the whole project\n");
 
 #if defined(BOINCIFIED) && (defined(USE_CUDA) || defined(USE_OPENCL))
       boinc_begin_critical_section();

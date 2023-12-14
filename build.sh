@@ -30,9 +30,8 @@ PATH_MINGW="$PATH"
 LOGFILE=$ROOT/build.log
 ARCH=`uname -m`
 
-# use SSE to avoid cross-platform precision issues
-#export CFLAGS="-mfpmath=sse -msse $CFLAGS"
-#export CXXFLAGS="-mfpmath=sse -msse $CXXFLAGS"
+export CFLAGS="-mfpmath=sse -msse2 -msse3 -msse4 $CFLAGS"
+export CXXFLAGS="-mfpmath=sse -msse2 -msse3 -msse4 $CXXFLAGS"
 
 # NVIDIA CUDA compiler wrapper options
 export NVCCFLAGS="-Xptxas -v -arch=compute_10 -code=compute_10 -g --verbose"
@@ -763,7 +762,7 @@ build_fftw()
     if [ "$1" == "$TARGET_DAEMONS" ]; then
         $ROOT/3rdparty/fftw/configure --prefix=$ROOT/install --enable-shared=no --enable-static=yes >> $LOGFILE 2>&1 || failure
     elif [ "$1" == "$TARGET_MAC_CUDA" ]; then
-        $ROOT/3rdparty/fftw/configure --prefix=$ROOT/install --enable-shared=no --enable-static=yes --enable-float --enable-sse CFLAGS="-O3 -fomit-frame-pointer -m64 -fstrict-aliasing -ffast-math $CFLAGS" CODELET_OPTIM="-O -fno-schedule-insns -fno-web -fno-loop-optimize --param inline-unit-growth=1000 --param large-function-growth=1000" >> $LOGFILE 2>&1 || failure
+        $ROOT/3rdparty/fftw/configure --prefix=$ROOT/install --enable-shared=no --enable-static=yes --enable-float --enable-sse2 CFLAGS="-O3 -fomit-frame-pointer -m64 -fstrict-aliasing -ffast-math $CFLAGS" CODELET_OPTIM="-O -fno-schedule-insns -fno-web -fno-loop-optimize --param inline-unit-growth=1000 --param large-function-growth=1000" >> $LOGFILE 2>&1 || failure
     else
         if [ "$1" == "$TARGET_LINUX_ARMV6" -o "$1" == "$TARGET_LINUX_ARMV7" ]; then
             if [ "$BUILD_TYPE" == "$BUILD_TYPE_CROSS" ]; then
@@ -776,7 +775,7 @@ build_fftw()
               $ROOT/3rdparty/fftw/configure --prefix=$ROOT/install --with-slow-timer --enable-shared=no --enable-static=yes --enable-float CFLAGS="-O3 -fomit-frame-pointer  -fstrict-aliasing -ffast-math $CFLAGS" CODELET_OPTIM="-O3  --param inline-unit-growth=1000 --param large-function-growth=1000" >> $LOGFILE 2>&1 || failure
             fi
         elif echo $CFLAGS | egrep -e '-[^ ]*sse ' >/dev/null; then
-            $ROOT/3rdparty/fftw/configure --prefix=$ROOT/install --enable-shared=no --enable-static=yes --enable-float --enable-sse CFLAGS="-O3 -fomit-frame-pointer -malign-double -fstrict-aliasing -ffast-math $CFLAGS" CODELET_OPTIM="-O -fno-schedule-insns -fno-web -fno-loop-optimize --param inline-unit-growth=1000 --param large-function-growth=1000" >> $LOGFILE 2>&1 || failure
+            $ROOT/3rdparty/fftw/configure --prefix=$ROOT/install --enable-shared=no --enable-static=yes --enable-float --enable-sse2 CFLAGS="-O3 -fomit-frame-pointer -malign-double -fstrict-aliasing -ffast-math $CFLAGS" CODELET_OPTIM="-O -fno-schedule-insns -fno-web -fno-loop-optimize --param inline-unit-growth=1000 --param large-function-growth=1000" >> $LOGFILE 2>&1 || failure
         elif echo $CFLAGS | egrep -e '-[^ ]*altivec ' >/dev/null; then
             $ROOT/3rdparty/fftw/configure --prefix=$ROOT/install --enable-shared=no --enable-static=yes --enable-float --enable-altivec CFLAGS="-O3 -mno-fused-madd -fomit-frame-pointer -fstrict-aliasing -ffast-math $CFLAGS" CODELET_OPTIM="-O -fno-schedule-insns -fno-web -fno-loop-optimize --param inline-unit-growth=1000 --param large-function-growth=1000" >> $LOGFILE 2>&1 || failure
         else
@@ -1102,9 +1101,9 @@ build_fftw_mingw()
     fi
     cd $ROOT/build/fftw || failure
     if [ "$1" == "$TARGET_WIN64" -o "$1" == "$TARGET_WIN64_CUDA" -o "$1" == "$TARGET_WIN64_OCL" ]; then
-        $ROOT/3rdparty/fftw/configure --host=$TARGET_HOST --build=$BUILD_HOST --prefix=$PREFIX --enable-shared=no --enable-static=yes --enable-float --enable-sse --with-our-malloc16 CFLAGS="-O3 -fomit-frame-pointer -malign-double -fstrict-aliasing -ffast-math -m64 $CFLAGS" CODELET_OPTIM="-O -fno-schedule-insns -fno-web -fno-loop-optimize --param inline-unit-growth=1000 --param large-function-growth=1000" >> $LOGFILE 2>&1 || failure
+        $ROOT/3rdparty/fftw/configure --host=$TARGET_HOST --build=$BUILD_HOST --prefix=$PREFIX --enable-shared=no --enable-static=yes --enable-float --enable-sse2 --with-our-malloc16 CFLAGS="-O3 -fomit-frame-pointer -malign-double -fstrict-aliasing -ffast-math -m64 $CFLAGS" CODELET_OPTIM="-O -fno-schedule-insns -fno-web -fno-loop-optimize --param inline-unit-growth=1000 --param large-function-growth=1000" >> $LOGFILE 2>&1 || failure
     else
-        $ROOT/3rdparty/fftw/configure --host=$TARGET_HOST --build=$BUILD_HOST --prefix=$PREFIX --enable-shared=no --enable-static=yes --enable-float --enable-sse --with-our-malloc16 CFLAGS="-O3 -fomit-frame-pointer -malign-double -fstrict-aliasing -ffast-math -march=pentium3 $CFLAGS" CODELET_OPTIM="-O -fno-schedule-insns -fno-web -fno-loop-optimize --param inline-unit-growth=1000 --param large-function-growth=1000" >> $LOGFILE 2>&1 || failure
+        $ROOT/3rdparty/fftw/configure --host=$TARGET_HOST --build=$BUILD_HOST --prefix=$PREFIX --enable-shared=no --enable-static=yes --enable-float --enable-sse2 --with-our-malloc16 CFLAGS="-O3 -fomit-frame-pointer -malign-double -fstrict-aliasing -ffast-math -march=pentium3 $CFLAGS" CODELET_OPTIM="-O -fno-schedule-insns -fno-web -fno-loop-optimize --param inline-unit-growth=1000 --param large-function-growth=1000" >> $LOGFILE 2>&1 || failure
     fi
     make >> $LOGFILE 2>&1 || failure
     make install >> $LOGFILE 2>&1 || failure

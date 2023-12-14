@@ -35,11 +35,10 @@ LIBS += -lboinc_api -lboinc
 LIBS += -lbfd -liberty
 LIBS += -L/usr/lib
 LIBS += -lstdc++
-LIBS += -Wl,-Bdynamic
 LIBS += -lpthread -lm -lc
 LIBS += $(EINSTEIN_RADIO_INSTALL)/lib/libz.a
 
-LDFLAGS += -static-libgcc
+LDFLAGS += -static
 
 CXXFLAGS += -I$(EINSTEIN_RADIO_INSTALL)/include
 CXXFLAGS += $(shell $(EINSTEIN_RADIO_INSTALL)/bin/gsl-config --cflags)
