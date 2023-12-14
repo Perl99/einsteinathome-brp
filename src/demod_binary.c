@@ -447,7 +447,9 @@ int MAIN (int argc, char *argv[])
 
   logMessage(info, true, "Starting data processing...\n");
     logMessage(info, true, "Compiled with flags: %s \n", CXX_FLAGS);
-    logMessage(info, true, "Changes: 1. sanity check in sincosLUTLookup disabled in release mode, moved to resamp_cpu, 2. remove calculating cosX because it is not used, 3. use SSE up to SSE4 in the whole project\n");
+    logMessage(info, true, "Changes: 1. sanity check in sincosLUTLookup disabled in release mode, moved to resamp_cpu\n");
+    logMessage(info, true, "2. remove calculating cosX because it is not used, 3. use SSE up to SSE4 in the whole project\n");
+    logMessage(info, true, "4. enable loading of wisdom file from local file, also on Windows\n");
 
 #if defined(BOINCIFIED) && (defined(USE_CUDA) || defined(USE_OPENCL))
       boinc_begin_critical_section();

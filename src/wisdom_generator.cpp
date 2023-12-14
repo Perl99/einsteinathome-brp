@@ -43,6 +43,7 @@ int main(int argc, char* argv[])
     
     printf("Generated plan:\n");
     fftwf_print_plan(fft_plan);
+    printf("\n");
 
     if (fftwf_export_wisdom_to_filename("BRP4.wisdom")) {
         printf("Exported to file BRP4.wisdom.\n");
