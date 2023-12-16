@@ -49,7 +49,7 @@ CXXFLAGS += -DHAVE_INLINE -DBOINCIFIED
 CXXFLAGS += -DUSE_CPU_RESAMP -DUSE_FFTW_FFT
 
 DEPS = Makefile
-OBJS = demod_binary.o demod_binary_resamp_cpu.o demod_binary_fft_fftw.o demod_binary_hs_cpu.o rngmed.o erp_boinc_ipc.o erp_getopt.o erp_getopt1.o erp_utilities.o erp_execinfo_plus.o hs_common.o
+OBJS = demod_binary.o demod_binary_resamp_cpu.o demod_binary_resamp_cpu_asm.o demod_binary_fft_fftw.o demod_binary_hs_cpu.o rngmed.o erp_boinc_ipc.o erp_getopt.o erp_getopt1.o erp_utilities.o erp_execinfo_plus.o hs_common.o
 EINSTEINBINARY_TARGET ?= einsteinbinary
 TARGET = $(EINSTEINBINARY_TARGET)
 
@@ -59,8 +59,8 @@ debug: $(TARGET)
 release: clean $(TARGET)
 
 # target specific options
-debug: CXXFLAGS += -DLOGLEVEL=debug -pg -ggdb3 -rdynamic -O0 -Wall
-release: CXXFLAGS += -DNDEBUG -DLOGLEVEL=info -ggdb3 -rdynamic -O3 -Wall
+debug: CXXFLAGS += -DLOGLEVEL=debug -pg -g -rdynamic -O0 -Wall
+release: CXXFLAGS += -DNDEBUG -DLOGLEVEL=info -g -rdynamic -O3 -Wall -fno-omit-frame-pointer
 
 # file based targets
 $(TARGET): $(DEPS) $(EINSTEIN_RADIO_SRC)/erp_boinc_wrapper.cpp $(OBJS) wisdom_generator
@@ -72,8 +72,11 @@ demod_binary.o: $(DEPS) $(EINSTEIN_RADIO_SRC)/demod_binary.c $(EINSTEIN_RADIO_SR
 demod_binary_resamp_cpu.o: $(DEPS) $(EINSTEIN_RADIO_SRC)/demod_binary_resamp_cpu.c $(EINSTEIN_RADIO_SRC)/demod_binary_resamp_cpu.h
 	$(CXX) -g $(CXXFLAGS) -c $(EINSTEIN_RADIO_SRC)/demod_binary_resamp_cpu.c
 
-hs_common.o: $(DEPS) $(EINSTEIN_RADIO_SRC)/hs_common.c $(EINSTEIN_RADIO_SRC)/hs_common.h
-	$(CXX) -g $(CXXFLAGS) -c $(EINSTEIN_RADIO_SRC)/hs_common.c
+demod_binary_resamp_cpu_asm.o: $(DEPS) $(EINSTEIN_RADIO_SRC)/demod_binary_resamp_cpu_asm.linux.s $(EINSTEIN_RADIO_SRC)/demod_binary_resamp_cpu_asm.h
+	$(CXX) -g $(CXXFLAGS) -c $(EINSTEIN_RADIO_SRC)/demod_binary_resamp_cpu_asm.linux.s -o demod_binary_resamp_cpu_asm.o
+
+hs_common.o: $(DEPS) $(EINSTEIN_RADIO_SRC)/hs_common.linux.s $(EINSTEIN_RADIO_SRC)/hs_common.h
+	$(CXX) -g $(CXXFLAGS) -c $(EINSTEIN_RADIO_SRC)/hs_common.linux.s -o hs_common.o
 
 demod_binary_hs_cpu.o: $(DEPS) $(EINSTEIN_RADIO_SRC)/demod_binary_hs_cpu.c $(EINSTEIN_RADIO_SRC)/demod_binary_hs_cpu.h $(EINSTEIN_RADIO_SRC)/hs_common.h
 	$(CXX) -g $(CXXFLAGS) -c $(EINSTEIN_RADIO_SRC)/demod_binary_hs_cpu.c

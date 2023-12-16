@@ -23,74 +23,21 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "demod_binary_resamp_cpu.h"
+#ifndef DEMOD_BINARY_RESAMP_CPU_ASM_H
+#define DEMOD_BINARY_RESAMP_CPU_ASM_H
 
-#include <stdlib.h>
-#include <math.h>
-#include <fftw3.h>
-#include "demod_binary.h"
-#include "erp_utilities.h"
+#include <stdint.h>
+#include "structs.h"
+#include "diptr.h" 
 
-
-// TODO: do we wanna keep those global (or use proper C++, or pass them around)?
-float *del_t = NULL;
-
-extern float sinSamples[];
-extern float cosSamples[];
-
-
-int set_up_resampling(DIfloatPtr input_dip, DIfloatPtr *output_dip, const RESAMP_PARAMS *const params, float *sinLUTsamples, float *cosLUTsamples)
-{
-    float * input = input_dip.host_ptr;
-    float ** output = & (output_dip->host_ptr);
-
-    // unused
-    input = NULL;
-    sinLUTsamples = NULL;
-    cosLUTsamples = NULL;
-
-    // allocate memory for time offsets in modulated time
-#ifndef BRP_FFT_INPLACE
-    del_t = (float *) calloc(params->nsamples_unpadded, sizeof(float));
-    if(del_t == NULL)
-    {
-        logMessage(error, true, "Couldn't allocate %d bytes of memory for modulated time steps.\n", params->nsamples_unpadded * sizeof(float));
-        return(RADPUL_EMEM);
-    }
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-    // allocate memory for resampled time series
-#ifdef BRP_FFT_INPLACE
-    *output = (float *) fftwf_alloc_real(params->fft_size*2);
-#else
-    *output = (float *) fftwf_alloc_real(params->nsamples);
-#endif
-    if(*output == NULL)
-    {
-        logMessage(error, true, "Couldn't allocate %d bytes of memory for resampled time series.\n", params->nsamples * sizeof(float));
-        return(RADPUL_EMEM);
-    }
+extern int run_resampling(DIfloatPtr input, DIfloatPtr output, const RESAMP_PARAMS *const params);
 
-#ifdef BRP_FFT_INPLACE
-	del_t= *output;
-#endif
-
-    return 0;
+#ifdef __cplusplus
 }
-
-void sincosLUTInitialize(float **sinLUT, float **cosLUT)
-{
-    *sinLUT = sinSamples;
-    *cosLUT = cosSamples;
-}
-
-
-int tear_down_resampling(DIfloatPtr output)
-{
-#ifndef BRP_FFT_INPLACE
-    free(del_t);
 #endif
-    fftwf_free(output.host_ptr);
 
-    return 0;
-}
+#endif

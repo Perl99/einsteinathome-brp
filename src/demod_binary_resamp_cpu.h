@@ -28,7 +28,8 @@
 
 #include <stdint.h>
 #include "structs.h"
-#include "diptr.h" 
+#include "diptr.h"
+#include "demod_binary_resamp_cpu_asm.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,7 +37,6 @@ extern "C" {
 
 extern int set_up_resampling(DIfloatPtr input, DIfloatPtr *output, const RESAMP_PARAMS *const params, float *sinLUTsamples, float *cosLUTsamples);
 extern void sincosLUTInitialize(float **sinLUT, float **cosLUT);
-extern int run_resampling(DIfloatPtr input, DIfloatPtr output, const RESAMP_PARAMS *const params);
 extern int tear_down_resampling(DIfloatPtr output);
 
 #ifdef __cplusplus
