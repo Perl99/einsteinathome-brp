@@ -23,14 +23,45 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "demod_binary_resamp_cpu_asm.h"
-
 #include <stdlib.h>
 #include <math.h>
-#include "demod_binary.h"
-#include "erp_utilities.h"
+
+#define ERP_SINCOS_LUT_RES          64
+#define ERP_SINCOS_LUT_SIZE         (ERP_SINCOS_LUT_RES + 1)
+#define ERP_SINCOS_LUT_RES_F        (1.0f * ERP_SINCOS_LUT_RES)
+#define ERP_SINCOS_LUT_RES_F_INV    (1.0f / ERP_SINCOS_LUT_RES)
+#define ERP_TWO_PI                  6.283185f
+#define ERP_TWO_PI_INV              (1.0f/ERP_TWO_PI)
 
 extern "C" {
+
+typedef union ptr_union_float {
+    float *host_ptr;
+    void *device_ptr; // dummy, not used in CPU mode
+} DIfloatPtr;
+
+// struct for passing parameters efficiently to resampling function
+typedef struct {
+    unsigned int nsamples;
+    unsigned int nsamples_unpadded;
+    unsigned int fft_size;
+    float tau;
+    float Omega;
+    float Psi0;
+    float dt;
+    float step_inv;
+    float S0;
+} RESAMP_PARAMS;
+
+typedef enum
+{
+    error = 1,
+    warn = 2,
+    info = 3,
+    debug = 4
+} ERP_LOGLEVEL;
+
+extern void logMessage(const ERP_LOGLEVEL logLevel, const bool showLevel, const char* msg, ...);
 
 
 // TODO: do we wanna keep those global (or use proper C++, or pass them around)?
