@@ -39,7 +39,7 @@ export NVCCFLAGS="-Xptxas -v -arch=compute_10 -code=compute_10 -g --verbose"
 # component versions
 BINUTILS_VERSION=2.22
 GSL_VERSION=1.12
-FFTW_VERSION=3.3.7
+FFTW_VERSION=3.3.3
 LIBXML_VERSION=2.6.32
 ZLIB_VERSION=1.3
 OPENSSL_VERSION=1.0.1l
