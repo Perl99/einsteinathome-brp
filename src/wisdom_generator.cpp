@@ -30,6 +30,8 @@ int main(int argc, char* argv[])
 	
     if (fftwf_import_system_wisdom()) {
         printf("Loaded system-wide wisdom.\n");
+    } else if (fftwf_import_wisdom_from_filename("BRP4.wisdom")) {
+        printf("Loaded local BRP4.wisdom.\n");
     } else {
         printf("No system-wide wisdom, ignoring.\n");
     }
