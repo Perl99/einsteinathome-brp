@@ -7,7 +7,7 @@
 
     <!--    BRP4G enhanced-->
     <file_info>
-        <name>einsteinbinary_BRP4G_0.18_windows_x86_64__BRP4X64.exe</name>
+        <name>einsteinbinary_BRP4G_0.23_windows_x86_64__BRP4X64.exe</name>
         <executable/>
     </file_info>
 
@@ -37,11 +37,11 @@
     <app_version>
         <app_name>einsteinbinary_BRP4G</app_name>
         <platform>windows_x86_64</platform>
-        <version_num>18</version_num>
+        <version_num>23</version_num>
         <api_version>7.1.0</api_version>
         <plan_class>BRP4X64</plan_class>
         <file_ref>
-            <file_name>einsteinbinary_BRP4G_0.18_windows_x86_64__BRP4X64.exe</file_name>
+            <file_name>einsteinbinary_BRP4G_0.23_windows_x86_64__BRP4X64.exe</file_name>
             <main_program/>
         </file_ref>
         <file_ref>

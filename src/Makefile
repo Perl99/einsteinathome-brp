@@ -47,6 +47,7 @@ CXXFLAGS += $(shell $(EINSTEIN_RADIO_INSTALL)/bin/xml2-config --cflags)
 CXXFLAGS += -I$(EINSTEIN_RADIO_INSTALL)/include/boinc
 CXXFLAGS += -DHAVE_INLINE -DBOINCIFIED
 CXXFLAGS += -DUSE_CPU_RESAMP -DUSE_FFTW_FFT
+CXXFLAGS += -mavx
 
 DEPS = Makefile
 OBJS = demod_binary.o demod_binary_resamp_cpu.o demod_binary_resamp_cpu_asm.o demod_binary_fft_fftw.o demod_binary_hs_cpu.o rngmed.o erp_boinc_ipc.o erp_getopt.o erp_getopt1.o erp_utilities.o erp_execinfo_plus.o hs_common.o

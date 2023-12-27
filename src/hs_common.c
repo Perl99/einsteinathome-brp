@@ -26,7 +26,9 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "hs_common.h"
+#include <stdint.h>
+
+#define LOG_PS_PAGE_SIZE 10
 
 extern "C" {
 
@@ -170,7 +172,3 @@ int harmonic_summing(float ** sumspec,
     return 0;
 }
 } /* extern "C" */
-
-
-
-
