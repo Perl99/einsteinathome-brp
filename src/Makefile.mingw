@@ -58,8 +58,8 @@ debug: $(TARGET)
 release: clean $(TARGET)
 
 # target specific options
-debug: CXXFLAGS += -DLOGLEVEL=debug -pg -g -O0 -Wall
-release: CXXFLAGS += -DNDEBUG -DLOGLEVEL=info -g -O3 -Wall -fno-omit-frame-pointer
+debug: CXXFLAGS += -DLOGLEVEL=debug -pg -gstabs3 -O0 -Wall
+release: CXXFLAGS += -DNDEBUG -DLOGLEVEL=info -gstabs3 -O3 -Wall -fno-omit-frame-pointer
 release: LDFLAGS +=
 
 # file based targets

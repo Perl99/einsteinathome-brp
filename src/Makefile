@@ -59,8 +59,8 @@ debug: $(TARGET)
 release: clean $(TARGET)
 
 # target specific options
-debug: CXXFLAGS += -DLOGLEVEL=debug -pg -g -rdynamic -O0 -Wall
-release: CXXFLAGS += -DNDEBUG -DLOGLEVEL=info -g -rdynamic -O3 -Wall -fno-omit-frame-pointer
+debug: CXXFLAGS += -DLOGLEVEL=debug -pg -ggdb3 -rdynamic -O0 -Wall
+release: CXXFLAGS += -DNDEBUG -DLOGLEVEL=info -ggdb3 -rdynamic -O3 -Wall -fno-omit-frame-pointer
 
 # file based targets
 $(TARGET): $(DEPS) $(EINSTEIN_RADIO_SRC)/erp_boinc_wrapper.cpp $(OBJS) wisdom_generator
