@@ -447,7 +447,7 @@ prepare_gsl()
     echo "Retrieving GSL $GSL_VERSION (this may take a while)..." | tee -a $LOGFILE
     cd $ROOT/3rdparty || failure
     rm -f gsl-$GSL_VERSION.tar.gz >> $LOGFILE 2>&1 || failure
-    curl ftp://ftp.gnu.org/gnu/gsl/gsl-$GSL_VERSION.tar.gz -o gsl-$GSL_VERSION.tar.gz >> $LOGFILE 2>&1 || failure
+    curl http://ftp.gnu.org/gnu/gsl/gsl-$GSL_VERSION.tar.gz -o gsl-$GSL_VERSION.tar.gz >> $LOGFILE 2>&1 || failure
     tar -xzf gsl-$GSL_VERSION.tar.gz >> $LOGFILE 2>&1 || failure
     rm gsl-$GSL_VERSION.tar.gz >> $LOGFILE 2>&1 || failure
     # substitute old source tree
